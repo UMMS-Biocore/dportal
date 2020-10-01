@@ -17,12 +17,6 @@ openssl x509 -req -in certs/certrequest.csr -signkey certs/privatekey.pem -out c
 cp docs/template.config.env config.env
 ```
 
-3. Insert initial database. Test user credentials will be: `username:test` and `password:secret`
-
-```
-mongorestore -d dmeta-skin db/dmeta-skin/
-```
-
 3. Install node modules using npm.
 
 ```
