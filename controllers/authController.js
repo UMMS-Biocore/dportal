@@ -8,8 +8,6 @@ const AppError = require('./../utils/appError');
 const accessTokens = require('./../controllers/accessTokenController');
 const refreshTokens = require('./../controllers/refreshTokenController');
 const groupController = require('./../controllers/groupController');
-const collectionsController = require('./../controllers/collectionsController');
-const { modelObj } = require('./../utils/buildModels');
 
 const [getAsync, postAsync] = [get, post].map(promisify);
 
@@ -23,78 +21,6 @@ exports.setDefPerms = catchAsync(async (req, res, next) => {
     // format options: "match", "find"
     // (`match` used in aggregation queries, `find` used for find queries )
     // type options: "read", "write", "create"
-    if (type === 'create') {
-      if (!res.locals.user) return next(new AppError(`Please login to create document.`, 404));
-      // Creation Control of Data Models:(req.params.collectionName should be exist)
-      // a) if parentCollectionID is set -> check parentCollectionID of collection
-      // use parentCollectionID to learn parentDocument (`refId` in `parentColName`)
-      // then check `perms` of the parentDocument
-      // inherit the `perms` of the parentDocument for new document.
-      // b) if parentCollectionID is null -> check restrictTo object of collection
-      // expected restrictTo object:
-      // restrictTo: {
-      //    user:["2872..","3fb32..","everyone"],
-      //    group:["d3ds..","46h5.."],
-      //    role:["admin, "project-admin"]
-      //  }
-      if (req.params.collectionName) {
-        const userId = res.locals.user.id;
-        const userRole = res.locals.user.role;
-        const col = await collectionsController.getCollectionByName(req.params.collectionName);
-        // if parentCollectionID is found, check parentCollectionID for permissions
-        if (col.parentCollectionID) {
-          // fieldName: reference field name in the collection
-          // parentColName: parent collection name
-          // refId: reference Id of the newly created document in `parentColName`
-          const { fieldName, parentColName } = await collectionsController.getParentRefField(
-            col.parentCollectionID
-          );
-          if (parentColName && fieldName) {
-            if (req.body[fieldName]) {
-              const refId = req.body[fieldName];
-              // get refId from `parentColName` collection
-              const Model = modelObj[parentColName];
-              const query = Model.findById(refId);
-              // check if parentColName's perms allows to write
-              const permFilter = await res.locals.Perms('write');
-              query.find(permFilter);
-              const doc = await query.lean();
-              if (!doc || (Array.isArray(doc) && doc.length === 0)) {
-                return false;
-              }
-              // inherit parents permissions by updating req.body.perms
-              if (!req.body.perms && doc[0].perms) req.body.perms = doc[0].perms;
-              return true;
-            }
-            return next(new AppError(`'${fieldName}' must be specified to create document.`, 403));
-          }
-
-          // if parentCollectionID not found, then check collection.restrictTo for permissions
-        } else if (!col.parentCollectionID && col.restrictTo) {
-          // user: defines allowed user_ids for creating item in the collection
-          // group: defines allowed group_ids for creating item in the collection
-          // role: defines allowed roles for creating item in the collection
-          // returns (Boolean) true when access is permitted
-          const user = col.restrictTo.user;
-          const group = col.restrictTo.group;
-          const role = col.restrictTo.role;
-          if (user && user.constructor === Array && user.includes(userId)) return true;
-          if (role && role.constructor === Array && role.includes(userRole)) return true;
-          if (group && group.constructor === Array) {
-            // get list of group_ids belong to user as an array
-            // if userGroups found in the collection group then return true
-            const userGroups = await groupController.getUserGroupIds(userId);
-            if (group.some(r => userGroups.includes(r))) return true;
-          }
-        }
-      } else {
-        // collection and field routes restrictedTo admin
-        // everybody can create his group/usergroup \
-        // everybody can signup and login
-        return true;
-      }
-      return false;
-    }
 
     // permsFieldUser: defines the read/write permission of the item
     // permsFieldGroup: defines the read/write permission of the item
