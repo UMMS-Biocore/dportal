@@ -1,0 +1,40 @@
+16.09.2020 Version 0.0.8
+Event Route and event tracker feature added for data routes.
+'Server routes' added.
+
+08.09.2020 Version 0.0.7
+Protected middleware replaced with loginRequired middleware. 
+
+31.08.2020 Version 0.0.6
+Permission filter added for handlerFactory functions.
+RestrictTo middleware added to control the access of routes based on user role.
+Field and Collection routes restricted to admin.
+Permission control added for creation of data routes. (collection.restrictTo + collection perms)
+Auto parentCollectionID references are added for data routes. 
+Data summary route added.
+Parsing algorithm added for data summary schema. 
+
+27.08.2020 Version 0.0.5
+Login page fixed for local login.
+Protocol option for config.env added.
+Groups and User Groups models and routers implemented.
+
+25.08.2020 Version 0.0.4
+lastUpdatedUser, owner fields added to Data, Collection and Field models.   
+API login and protected middlewares added for both SSO and Local Login.
+API login supports both e-mail and username sign-in.
+Test user added to initial db.
+
+23.08.2020 Version 0.0.3
+Data Model schema settings are defined.
+parentCollectionID updated.
+
+21.08.2020 Version 0.0.2
+- Before saving, Collection and Field names converted to lowercase, and spaces replaced with underscores. 
+- Field depreciation is set for Collections and Fields models.
+- Collection Routes (create, delete, and update) updates Data Models.  
+    
+20.08.2020 Version 0.0.1
+- Name validator added to fields model which validates uniqueness of the name in the collection.
+- SSO_LOGIN option added to config.env 
+- Field Routes updates Data Models.
