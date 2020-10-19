@@ -3,5 +3,27 @@ extends base
 block content
   #root
   main.main
-    .card-container
-    
+      table#dmetaDetailedTable.table.table-striped.display(style='width:100%' cellspacing="0")
+        thead
+          tr
+            th Name
+            th Collection
+            th Project
+            th Patient
+            th Aliquot
+            th Clinical phenotype
+            th Skin
+            th Patient Note
+            th Cell density (TC)
+            th Cell density indrop
+            th Collect date
+            th Library tube id
+            th Pool id
+            th Total Reads
+            th Multimapped Reads (RSEM)
+            th Multimapped Reads (STAR)
+            th Unique Reads (RSEM)
+            th Unique Reads (STAR)
+            th Added on
+            th View
+        tbody

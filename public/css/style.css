@@ -1271,3 +1271,8 @@ body {
   -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
 }
+
+table.dataTable tbody th,
+table.dataTable tbody td {
+  white-space: nowrap;
+}
