@@ -17,7 +17,7 @@ exports.setDefPerms = catchAsync(async (req, res, next) => {
   //    read:{user:["2872..","3fb32..","everyone"], group:["d3ds..","46h5.."] },
   //    write:{user:["2fwr.."], group:["d3ds.."] }
   //  }
-  res.locals.Perms = async function(type) {
+  res.locals.Perms = async function (type) {
     // format options: "match", "find"
     // (`match` used in aggregation queries, `find` used for find queries )
     // type options: "read", "write", "create"
@@ -73,9 +73,9 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-const signToken = id => {
+const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
@@ -85,7 +85,7 @@ const createSendToken = (user, statusCode, req, res) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   });
 
   // Remove password from output
@@ -95,8 +95,8 @@ const createSendToken = (user, statusCode, req, res) => {
     status: 'success',
     token,
     data: {
-      user
-    }
+      user,
+    },
   });
 };
 
@@ -104,7 +104,7 @@ const sendTokenCookie = (token, req, res) => {
   res.cookie('jwt', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   });
 };
 
@@ -119,9 +119,9 @@ exports.saveAccessRefreshToken = async (accessToken, refreshToken, expiresIn) =>
     const userInfoObj = await getAsync({
       url: process.env.SSO_USER_INFO_URL,
       headers: {
-        Authorization: `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
       },
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
     });
     if (userInfoObj.statusCode !== 200) {
       console.log(userInfoObj.body);
@@ -181,15 +181,15 @@ exports.login = catchAsync(async (req, res, next) => {
       const sendBody = {
         username,
         password,
-        grant_type: 'password'
+        grant_type: 'password',
       };
       const { data, status } = await axios.post(
         `${process.env.SSO_URL}/api/v1/oauth/token`,
         sendBody,
         {
           headers: {
-            Authorization: auth
-          }
+            Authorization: auth,
+          },
         }
       );
       const accessToken = data.access_token;
@@ -206,8 +206,8 @@ exports.login = catchAsync(async (req, res, next) => {
         status: 'success',
         token: accessToken,
         data: {
-          user
-        }
+          user,
+        },
       });
     } catch (err) {
       return next(new AppError('Login Failed', 403));
@@ -232,10 +232,9 @@ exports.login = catchAsync(async (req, res, next) => {
 exports.logout = async (req, res) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
+    httpOnly: true,
   });
-  const rootUrl = `${req.protocol}://${req.get('host')}`;
-  res.redirect(`${process.env.SSO_URL}/api/v1/users/logout?redirect_uri=${rootUrl}`);
+  res.redirect(`${process.env.SSO_URL}/api/v1/users/logout?redirect_uri=${process.env.BASE_URL}`);
 };
 
 // isLoggedIn or isLoggedInView should be executed before this middleware
@@ -315,8 +314,7 @@ exports.isLoggedInView = async (req, res, next) => {
     // check if its authenticated on Auth server
     req.session.loginCheck = true;
     req.session.redirectURL = '/';
-    // const originalUrl = `${req.protocol}://${req.get('host')}`;
-    const originalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    const originalUrl = `${process.env.BASE_URL}`;
     res.redirect(
       `${process.env.SSO_CHECKLOGIN_URL}?redirect_original=${originalUrl}&redirect_uri=${process.env.SSO_REDIRECT_URL}&response_type=code&client_id=${process.env.CLIENT_ID}&scope=offline_access`
     );
@@ -362,8 +360,8 @@ exports.ssoReceiveToken = async (req, res, next) => {
         redirect_uri: process.env.SSO_REDIRECT_URL,
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        grant_type: 'authorization_code'
-      }
+        grant_type: 'authorization_code',
+      },
     });
     const msg = JSON.parse(body);
     console.log('msg', msg);
