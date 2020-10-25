@@ -295,6 +295,10 @@ exports.isLoggedInView = async (req, res, next) => {
     );
     return;
   }
+  if (process.env.SSO_LOGIN === 'true' && req.session.loginCheck) {
+    // after redirection from SSO server, disable loginCheck to prevent redirect loop
+    req.session.loginCheck = false;
+  }
   if (req.cookies.jwt) {
     try {
       let currentUser;
