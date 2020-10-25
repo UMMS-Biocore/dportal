@@ -18,9 +18,9 @@ exports.getDmetaInfo = catchAsync(async (req, res, next) => {
       },
       rejectUnauthorized: false
     });
+    if (!data) return next(new AppError(`No document found!`, 404));
     const doc = JSON.parse(data.body).data.data;
 
-    if (!data) return next(new AppError(`No document found!`, 404));
     res.status(200).json({
       status: 'success',
       reqeustedAt: req.requestTime,

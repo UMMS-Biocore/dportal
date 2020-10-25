@@ -166,14 +166,7 @@ exports.login = catchAsync(async (req, res, next) => {
       return next(new AppError('Please provide email/username and password!', 400));
     }
     try {
-      if (!username && email) {
-        const localUser = await User.findOne({ email });
-        console.log(localUser);
-        if (!localUser) {
-          return next(new AppError('Please use your username for login.', 400));
-        }
-        username = localUser.username;
-      }
+      if (!username && email) username = email;
 
       const auth = `Basic ${Buffer.from(
         `${process.env.CLIENT_ID}:${process.env.CLIENT_SECRET}`
