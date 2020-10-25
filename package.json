@@ -21,6 +21,7 @@
     "bootstrap": "^4.5.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
+    "core-js": "^3.6.5",
     "cors": "^2.8.5",
     "css": "^3.0.0",
     "datatables.net-autofill-bs4": "^2.3.5",
