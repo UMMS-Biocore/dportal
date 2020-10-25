@@ -11,7 +11,7 @@ if (process.env.NODE_ENV === 'development') {
   https.globalAgent.options.rejectUnauthorized = false;
 }
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION! Shutting down...');
   console.log(err.name, err.message);
   process.exit(1);
@@ -26,13 +26,13 @@ mongoose
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
-    useUnifiedTopology: true,
+    useUnifiedTopology: true
   })
   .then(() => {
     console.log('DB Connections Successful');
   });
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   console.log(err);
   console.log(err.name, ':', err.message);
   console.log('UNCAUGHT EXCEPTION CLOSING THE APP!');
@@ -46,10 +46,10 @@ if (process.env.PROTOCOL === 'https') {
   // Create HTTPS server.
   const options = {
     key: fs.readFileSync(path.join(__dirname, process.env.CERTS_PRIVATE_KEY)),
-    cert: fs.readFileSync(path.join(__dirname, process.env.CERTS_CERTIFICATE)),
+    cert: fs.readFileSync(path.join(__dirname, process.env.CERTS_CERTIFICATE))
   };
   server = https.createServer(options, app);
-  server.listen(port, function () {
+  server.listen(port, function() {
     console.log(`HTTPS server running on port ${port}...`);
   });
 } else {
@@ -59,7 +59,7 @@ if (process.env.PROTOCOL === 'https') {
   });
 }
 
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', err => {
   console.log('UNHANDLED REJECTION! Shutting down...');
   console.log(err.name, err.message);
   server.close(() => {

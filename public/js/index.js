@@ -1,13 +1,14 @@
 /* eslint-disable */
-import '@babel/polyfill';
+// import '@babel/polyfill';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './../css/style.css';
+// import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 
 const $ = require('jquery');
 const dt = require('datatables.net')();
 const https = require('https');
-// import '@fortawesome/fontawesome-free/css/all.css';
 
 import { login, logout } from './login';
 import { updateSettings } from './updateSettings';
