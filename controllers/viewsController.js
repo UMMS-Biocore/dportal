@@ -12,6 +12,10 @@ exports.getAccount = (req, res) => {
   });
 };
 
+exports.afterSSO = (req, res) => {
+  res.status(200).render('after-sso');
+};
+
 exports.getLoginForm = (req, res, next) => {
   if (process.env.SSO_LOGIN !== 'true') {
     res.status(200).render('login', {
