@@ -43982,6 +43982,8 @@ if (afterSsoClose) {
     if (window.opener && !window.opener.closed) {
       window.opener.location.reload();
     }
+  } else {
+    window.location = envConf.getAttribute('base_url');
   }
 
   window.close();

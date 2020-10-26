@@ -287,6 +287,8 @@ exports.isLoggedIn = async (req, res, next) => {
 // Only for rendered pages, no errors!
 exports.isLoggedInView = async (req, res, next) => {
   console.log('** isLoggedInView');
+  console.log('req.cookies.jwt', req.cookies.jwt);
+  console.log('req.session.loginCheck', req.session.loginCheck);
   if (req.cookies.jwt && req.cookies.jwt != 'loggedout') {
     try {
       let currentUser;
