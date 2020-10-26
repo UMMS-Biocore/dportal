@@ -227,7 +227,9 @@ exports.logout = async (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
   });
-  res.redirect(`${process.env.SSO_URL}/api/v1/users/logout?redirect_uri=${process.env.BASE_URL}`);
+  if (process.env.SSO_LOGIN === 'true') {
+    res.redirect(`${process.env.SSO_URL}/api/v1/users/logout?redirect_uri=${process.env.BASE_URL}`);
+  }
 };
 
 // isLoggedIn or isLoggedInView should be executed before this middleware
@@ -285,21 +287,7 @@ exports.isLoggedIn = async (req, res, next) => {
 // Only for rendered pages, no errors!
 exports.isLoggedInView = async (req, res, next) => {
   console.log('** isLoggedInView');
-  if (process.env.SSO_LOGIN === 'true' && !req.session.loginCheck) {
-    // check if its authenticated on Auth server
-    req.session.loginCheck = true;
-    req.session.redirectURL = '/';
-    const originalUrl = `${process.env.BASE_URL}`;
-    res.redirect(
-      `${process.env.SSO_CHECKLOGIN_URL}?redirect_original=${originalUrl}&redirect_uri=${process.env.SSO_REDIRECT_URL}&response_type=code&client_id=${process.env.CLIENT_ID}&scope=offline_access`
-    );
-    return;
-  }
-  if (process.env.SSO_LOGIN === 'true' && req.session.loginCheck) {
-    // after redirection from SSO server, disable loginCheck to prevent redirect loop
-    req.session.loginCheck = false;
-  }
-  if (req.cookies.jwt) {
+  if (req.cookies.jwt && req.cookies.jwt != 'loggedout') {
     try {
       let currentUser;
       if (process.env.SSO_LOGIN === 'true') {
@@ -317,6 +305,17 @@ exports.isLoggedInView = async (req, res, next) => {
     } catch (err) {
       return next();
     }
+  } else if (process.env.SSO_LOGIN === 'true' && !req.session.loginCheck) {
+    // check if its authenticated on Auth server
+    req.session.loginCheck = true;
+    req.session.redirectURL = '/';
+    const originalUrl = `${process.env.BASE_URL}`;
+    res.redirect(
+      `${process.env.SSO_CHECKLOGIN_URL}?redirect_original=${originalUrl}&redirect_uri=${process.env.SSO_REDIRECT_URL}&response_type=code&client_id=${process.env.CLIENT_ID}&scope=offline_access`
+    );
+  } else if (process.env.SSO_LOGIN === 'true' && req.session.loginCheck) {
+    req.session.loginCheck = false;
+    next();
   } else {
     next();
   }
@@ -380,7 +379,8 @@ exports.ssoReceiveToken = async (req, res, next) => {
 
     res.locals.user = updatedUser;
     sendTokenCookie(accessToken, req, res);
-    res.redirect(req.session.redirectURL);
+    // res.redirect(req.session.redirectURL);
+    res.redirect('/after-sso');
   } catch (e) {
     return next(new AppError('Login Failed', 403));
   }

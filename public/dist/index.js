@@ -43918,70 +43918,6 @@ var logout = /*#__PURE__*/function () {
 }();
 
 exports.logout = logout;
-},{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"updateSettings.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.updateSettings = void 0;
-
-var _axios = _interopRequireDefault(require("axios"));
-
-var _alerts = require("./alerts");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
-
-// type is either 'password' or 'data'
-var updateSettings = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(data, type) {
-    var url, res;
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.prev = 0;
-            url = type === 'password' ? '/api/v1/users/updateMyPassword' : '/api/v1/users/updateMe';
-            _context.next = 4;
-            return (0, _axios.default)({
-              method: 'PATCH',
-              url: url,
-              data: data
-            });
-
-          case 4:
-            res = _context.sent;
-
-            if (res.data.status === 'success') {
-              (0, _alerts.showAlert)('success', "".concat(type.toUpperCase(), " updated successfully!"));
-            }
-
-            _context.next = 11;
-            break;
-
-          case 8:
-            _context.prev = 8;
-            _context.t0 = _context["catch"](0);
-            (0, _alerts.showAlert)('error', _context.t0.response.data.message);
-
-          case 11:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee, null, [[0, 8]]);
-  }));
-
-  return function updateSettings(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-exports.updateSettings = updateSettings;
 },{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -43994,8 +43930,6 @@ require("./../css/style.css");
 require("regenerator-runtime/runtime");
 
 var _login = require("./login");
-
-var _updateSettings = require("./updateSettings");
 
 var _alerts = require("./alerts");
 
@@ -44013,24 +43947,51 @@ var dt = require('datatables.net')();
 
 var https = require('https');
 
-// DOM ELEMENTS
+// GLOBAL ENV CONFIG
+var envConf = document.querySelector('#session-env-config');
+var ssologin = envConf && envConf.getAttribute('sso_login') && envConf.getAttribute('sso_login') == 'true'; // DOM ELEMENTS
+
 var logOutBtn = document.querySelector('.nav__el--logout');
-var userDataForm = document.querySelector('.form-user-data');
+var logInBtn = document.querySelector('.nav__el--login');
+var afterSsoClose = document.querySelector('.after-sso-close');
 var loginForm = document.querySelector('.form--login');
 if (logOutBtn) logOutBtn.addEventListener('click', _login.logout);
+
+function popupwindow(url, title, w, h) {
+  var left = screen.width / 2 - w / 2;
+  var top = screen.height / 2 - h / 2;
+  return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+} // open child window for SSO if user clicks on sign-in button
+
+
+if (logInBtn && ssologin) {
+  logInBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    var SSO_URL = envConf.getAttribute('sso_url');
+    var CLIENT_ID = envConf.getAttribute('client_id');
+    var SSO_REDIRECT_URL = "".concat(window.location.origin, "/receivetoken");
+    var SSO_FINAL_URL = "".concat(SSO_URL, "/dialog/authorize?redirect_uri=").concat(SSO_REDIRECT_URL, "&response_type=code&client_id=").concat(CLIENT_ID, "&scope=offline_access");
+    popupwindow(SSO_FINAL_URL, 'Login', 650, 800);
+  });
+}
+
+if (afterSsoClose) {
+  if (window.opener) {
+    window.opener.focus();
+
+    if (window.opener && !window.opener.closed) {
+      window.opener.location.reload();
+    }
+  }
+
+  window.close();
+}
+
 if (loginForm) loginForm.addEventListener('submit', function (e) {
   e.preventDefault();
   var email = document.getElementById('email').value;
   var password = document.getElementById('password').value;
   (0, _login.login)(email, password);
-});
-if (userDataForm) userDataForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-  var form = new FormData();
-  form.append('name', document.getElementById('name').value);
-  form.append('email', document.getElementById('email').value);
-  form.append('photo', document.getElementById('photo').files[0]);
-  (0, _updateSettings.updateSettings)(form, 'data');
 });
 var alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) (0, _alerts.showAlert)('success', alertMessage, 20);
@@ -44197,7 +44158,7 @@ _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
     }
   }, _callee, null, [[0, 9]]);
 }))();
-},{"bootstrap":"../../node_modules/bootstrap/dist/js/bootstrap.js","bootstrap/dist/css/bootstrap.min.css":"../../node_modules/bootstrap/dist/css/bootstrap.min.css","./../css/style.css":"../css/style.css","regenerator-runtime/runtime":"../../node_modules/regenerator-runtime/runtime.js","jquery":"../../node_modules/jquery/dist/jquery.js","datatables.net":"../../node_modules/datatables.net/js/jquery.dataTables.js","https":"../../node_modules/https-browserify/index.js","./login":"login.js","./updateSettings":"updateSettings.js","./alerts":"alerts.js","axios":"../../node_modules/axios/index.js"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"bootstrap":"../../node_modules/bootstrap/dist/js/bootstrap.js","bootstrap/dist/css/bootstrap.min.css":"../../node_modules/bootstrap/dist/css/bootstrap.min.css","./../css/style.css":"../css/style.css","regenerator-runtime/runtime":"../../node_modules/regenerator-runtime/runtime.js","jquery":"../../node_modules/jquery/dist/jquery.js","datatables.net":"../../node_modules/datatables.net/js/jquery.dataTables.js","https":"../../node_modules/https-browserify/index.js","./login":"login.js","./alerts":"alerts.js","axios":"../../node_modules/axios/index.js"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -44225,7 +44186,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "44871" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33459" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

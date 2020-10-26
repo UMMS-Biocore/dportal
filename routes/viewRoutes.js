@@ -8,6 +8,7 @@ router.get('/receivetoken', authController.ssoReceiveToken);
 
 router.use(authController.isLoggedInView);
 router.get('/', viewsController.getOverview);
+router.get('/after-sso', viewsController.afterSSO);
 router.get(
   '/login',
   authController.ensureSingleSignOn,
