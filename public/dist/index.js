@@ -44013,6 +44013,8 @@ var refreshDmetaTable = function refreshDmetaTable(data, id) {
       columns: [{
         data: 'name'
       }, {
+        data: 'status'
+      }, {
         data: 'collection_name'
       }, {
         data: 'project_name'
@@ -44042,45 +44044,86 @@ var refreshDmetaTable = function refreshDmetaTable(data, id) {
           console.log(oData);
           var dat = '';
           if (oData.sample_summary && oData.sample_summary['Total Reads']) dat = oData.sample_summary['Total Reads'];
-          $(nTd).html(dat);
-        }
-      }, {
-        data: null,
-        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
-          var dat = '';
-          if (oData.sample_summary && oData.sample_summary['Multimapped Reads Aligned (RSEM)']) dat = oData.sample_summary['Multimapped Reads Aligned (RSEM)'];
-          $(nTd).html(dat);
+          $(nTd).text(dat);
         }
       }, {
         data: null,
         fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
           var dat = '';
           if (oData.sample_summary && oData.sample_summary['Multimapped Reads Aligned (STAR)']) dat = oData.sample_summary['Multimapped Reads Aligned (STAR)'];
-          $(nTd).html(dat);
-        }
-      }, {
-        data: null,
-        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
-          var dat = '';
-          if (oData.sample_summary && oData.sample_summary['Unique Aligned Reads (RSEM)']) dat = oData.sample_summary['Unique Aligned Reads (RSEM)'];
-          $(nTd).html(dat);
+          $(nTd).text(dat);
         }
       }, {
         data: null,
         fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
           var dat = '';
           if (oData.sample_summary && oData.sample_summary['Unique Reads Aligned (STAR)']) dat = oData.sample_summary['Unique Reads Aligned (STAR)'];
-          $(nTd).html(dat);
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Total aligned UMIs (ESAT)']) dat = oData.sample_summary['Total aligned UMIs (ESAT)'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Total deduped UMIs (ESAT)']) dat = oData.sample_summary['Total deduped UMIs (ESAT)'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Duplication Rate']) dat = oData.sample_summary['Duplication Rate'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Number of Cells']) dat = oData.sample_summary['Number of Cells'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Mean UMIs per Cell']) dat = oData.sample_summary['Mean UMIs per Cell'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Number of Genes']) dat = oData.sample_summary['Number of Genes'];
+          $(nTd).text(dat);
+        }
+      }, {
+        data: null,
+        fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
+          var dat = '';
+          if (oData.sample_summary && oData.sample_summary['Mean Genes per Cell']) dat = oData.sample_summary['Mean Genes per Cell'];
+          $(nTd).text(dat);
         }
       }, {
         data: 'date_created'
       }, {
+        data: 'owner'
+      }, {
         data: null,
         fnCreatedCell: function fnCreatedCell(nTd, sData, oData, iRow, iCol) {
-          // $(nTd).html(
-          //   '<button type="button" class="btn btn-default btn-sm showDetailSample"> Details</button>'
-          // );
-          $(nTd).html('Details');
+          var btn = '';
+
+          if (oData.run_url) {
+            var run_url = oData.run_url;
+            btn = "<a href=\"".concat(run_url, "\">View Run</a>");
+          }
+
+          $(nTd).html(btn);
         }
       }],
       select: {
@@ -44188,7 +44231,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "33459" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46751" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
