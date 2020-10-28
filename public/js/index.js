@@ -238,7 +238,7 @@ var refreshDmetaTable = function(data, id) {
             let btn = '';
             if (oData.run_url) {
               var run_url = oData.run_url;
-              btn = `<a href="${run_url}">View Run</a>`;
+              btn = `<a href="${run_url}" target="_blank">View Run</a>`;
             }
             $(nTd).html(btn);
           }

@@ -44120,7 +44120,7 @@ var refreshDmetaTable = function refreshDmetaTable(data, id) {
 
           if (oData.run_url) {
             var run_url = oData.run_url;
-            btn = "<a href=\"".concat(run_url, "\">View Run</a>");
+            btn = "<a href=\"".concat(run_url, "\" target=\"_blank\">View Run</a>");
           }
 
           $(nTd).html(btn);
@@ -44231,7 +44231,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46751" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37327" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
