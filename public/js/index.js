@@ -88,6 +88,23 @@ var refreshDmetaTable = function(data, id) {
   var TableID = '#' + id + 'Table';
   var searchBarID = '#' + id + 'SearchBar';
 
+  var prepareDmetaData = data => {
+    let ret = [];
+    if (data.data && data.data.data) {
+      ret = data.data.data;
+      for (var i = 0; i < ret.length; i++) {
+        if (ret[i].sample_summary) {
+          let sample_summary = $.extend(true, {}, ret[i].sample_summary);
+          delete ret[i].sample_summary;
+          console.log(sample_summary);
+          //merge sample_summary into ret[i]
+          $.extend(ret[i], sample_summary);
+        }
+      }
+    }
+    return ret;
+  };
+
   if (!$.fn.DataTable.isDataTable(TableID)) {
     var dataTableObj = {
       columns: [
@@ -134,95 +151,34 @@ var refreshDmetaTable = function(data, id) {
           data: 'pool_id'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            console.log(oData);
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Total Reads'])
-              dat = oData.sample_summary['Total Reads'];
-            $(nTd).text(dat);
-          }
+          data: 'Total Reads'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Multimapped Reads Aligned (STAR)'])
-              dat = oData.sample_summary['Multimapped Reads Aligned (STAR)'];
-            $(nTd).text(dat);
-          }
+          data: 'Multimapped Reads Aligned (STAR)'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Unique Reads Aligned (STAR)'])
-              dat = oData.sample_summary['Unique Reads Aligned (STAR)'];
-            $(nTd).text(dat);
-          }
+          data: 'Unique Reads Aligned (STAR)'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Total aligned UMIs (ESAT)'])
-              dat = oData.sample_summary['Total aligned UMIs (ESAT)'];
-            $(nTd).text(dat);
-          }
+          data: 'Total aligned UMIs (ESAT)'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Total deduped UMIs (ESAT)'])
-              dat = oData.sample_summary['Total deduped UMIs (ESAT)'];
-            $(nTd).text(dat);
-          }
+          data: 'Total deduped UMIs (ESAT)'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Duplication Rate'])
-              dat = oData.sample_summary['Duplication Rate'];
-            $(nTd).text(dat);
-          }
+          data: 'Duplication Rate'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Number of Cells'])
-              dat = oData.sample_summary['Number of Cells'];
-            $(nTd).text(dat);
-          }
+          data: 'Number of Cells'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Mean UMIs per Cell'])
-              dat = oData.sample_summary['Mean UMIs per Cell'];
-            $(nTd).text(dat);
-          }
+          data: 'Mean UMIs per Cell'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Number of Genes'])
-              dat = oData.sample_summary['Number of Genes'];
-            $(nTd).text(dat);
-          }
+          data: 'Number of Genes'
         },
         {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            var dat = '';
-            if (oData.sample_summary && oData.sample_summary['Mean Genes per Cell'])
-              dat = oData.sample_summary['Mean Genes per Cell'];
-            $(nTd).text(dat);
-          }
+          data: 'Mean Genes per Cell'
         },
         {
           data: 'date_created'
@@ -246,22 +202,22 @@ var refreshDmetaTable = function(data, id) {
         style: 'multi',
         selector: 'td:not(.no_select_row)'
       },
-      order: [[3, 'desc']],
+      order: [[24, 'desc']],
       columnDefs: [
-        {
-          targets: [3, 4],
-          className: 'disp_none'
-        },
-        {
-          targets: [6],
-          className: 'no_select_row'
-        },
+        // {
+        //   targets: [3, 4],
+        //   className: 'disp_none'
+        // },
+        // {
+        //   targets: [6],
+        //   className: 'no_select_row'
+        // },
         { defaultContent: '-', targets: '_all' } //hides undefined error
       ]
     };
     dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
     dataTableObj.destroy = true;
-    dataTableObj.data = data.data.data;
+    dataTableObj.data = prepareDmetaData(data);
     dataTableObj.hover = true;
     // speed up the table loading
     dataTableObj.deferRender = true;
