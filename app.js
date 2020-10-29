@@ -26,6 +26,7 @@ const app = express();
 app.enable('trust proxy');
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
+app.locals.basedir = app.get('views'); // set basedir for pug
 // 1) GLOBAL MIDDLEWARES
 app.use(cors());
 app.options('*', cors());
