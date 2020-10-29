@@ -1,14 +1,17 @@
 /* eslint-disable */
-// import '@babel/polyfill';
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './../css/style.css';
-// import 'core-js/stable';
-import 'regenerator-runtime/runtime';
+import '@babel/polyfill';
+var $ = require('jquery');
+window.$ = $;
+// Datatables Core
+require('datatables.net');
+// Datatables Bootstrap 4
+require('datatables.net-bs4/js/dataTables.bootstrap4.js');
+require('datatables.net-bs4/css/dataTables.bootstrap4.css');
 
-const $ = require('jquery');
-const dt = require('datatables.net')();
-const https = require('https');
+// import 'bootstrap';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import './../css/style.css';
+// import './../css/custom.css';
 
 import { login, logout } from './login';
 import { showAlert } from './alerts';
@@ -86,11 +89,6 @@ var refreshDmetaTable = function(data, id) {
   var searchBarID = '#' + id + 'SearchBar';
 
   if (!$.fn.DataTable.isDataTable(TableID)) {
-    // th Multimapped Reads (STAR)
-    // th Unique Reads (RSEM)
-    // th Unique Reads (STAR)
-    // th Added on
-    // th View
     var dataTableObj = {
       columns: [
         {
@@ -269,9 +267,10 @@ var refreshDmetaTable = function(data, id) {
     dataTableObj.deferRender = true;
     dataTableObj.scroller = true;
     dataTableObj.scrollCollapse = true;
-    // dataTableObj.scrollY = 395;
+    // dataTableObj.scrollY = 600;
     dataTableObj.scrollX = 500;
     dataTableObj.sScrollX = true;
+    // dataTableObj.autoWidth = false;
     console.log(dataTableObj);
     console.log(TableID);
 
