@@ -1,21 +1,21 @@
 /* eslint-disable */
 import '@babel/polyfill';
+import { login, logout } from './login';
+import { showAlert } from './alerts';
+import axios from 'axios';
 var $ = require('jquery');
-window.$ = $;
-// Datatables Core
-require('datatables.net');
-// Datatables Bootstrap 4
-require('datatables.net-bs4/js/dataTables.bootstrap4.js');
-require('datatables.net-bs4/css/dataTables.bootstrap4.css');
+window.$ = $; // jquery installation
+require('datatables.net'); // Datatables Core
+require('datatables.net-bs4/js/dataTables.bootstrap4.js'); // Datatables Bootstrap 4
+require('datatables.net-bs4/css/dataTables.bootstrap4.css'); // Datatables Bootstrap 4
 
 // import 'bootstrap';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import './../css/style.css';
 // import './../css/custom.css';
 
-import { login, logout } from './login';
-import { showAlert } from './alerts';
-import axios from 'axios';
+// GLOBAL SCOPE
+let $scope = {};
 
 // GLOBAL ENV CONFIG
 const envConf = document.querySelector('#session-env-config');
@@ -82,8 +82,6 @@ if (loginForm)
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) showAlert('success', alertMessage, 20);
 
-console.log($('#detailedSample'));
-
 var refreshDmetaTable = function(data, id) {
   var TableID = '#' + id + 'Table';
   var searchBarID = '#' + id + 'SearchBar';
@@ -92,112 +90,76 @@ var refreshDmetaTable = function(data, id) {
     let ret = [];
     if (data.data && data.data.data) {
       ret = data.data.data;
-      for (var i = 0; i < ret.length; i++) {
-        if (ret[i].sample_summary) {
-          let sample_summary = $.extend(true, {}, ret[i].sample_summary);
-          delete ret[i].sample_summary;
-          console.log(sample_summary);
-          //merge sample_summary into ret[i]
-          $.extend(ret[i], sample_summary);
-        }
-      }
     }
     return ret;
   };
 
+  var initCompDmetaTable = function(settings, json) {
+    var api = new $.fn.dataTable.Api(settings);
+    $(TableID + '_filter').css('display', 'inline-block');
+    var toogleShowColsId = 'toogleShowColsId';
+    $(searchBarID).append(
+      '<div style="margin-bottom:20px; padding-left:8px; display:inline-block;" id="' +
+        toogleShowColsId +
+        '"></div>'
+    );
+    const colSelectMenu =
+      '<div class="collapse" id="collapseExample"><div class="card card-body">Sed feugiat egestas nisl sed faucibus. Fusce nisi metus, accumsan eget ullamcorper eget, iaculis id augue. Vivamus porta elit id nulla varius, in sodales massa bibendum. Nullam condimentum pellentesque est, vel lacinia ipsum efficitur sed. Morbi porttitor porta commodo.</div></div>';
+    const colSelectBtn =
+      '<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"> <i class="cil-chart-table"></i> </button>';
+
+    $('#' + toogleShowColsId).append(colSelectBtn);
+    $(searchBarID).append(colSelectMenu);
+  };
+
   if (!$.fn.DataTable.isDataTable(TableID)) {
-    var dataTableObj = {
-      columns: [
-        {
-          data: 'name'
-        },
-        {
-          data: 'status'
-        },
-        {
-          data: 'collection_name'
-        },
-        {
-          data: 'project_name'
-        },
-        {
-          data: 'patient'
-        },
-        {
-          data: 'aliquot'
-        },
-        {
-          data: 'clinic_phen'
-        },
-        {
-          data: 'lesional'
-        },
-        {
-          data: 'patient_note'
-        },
-        {
-          data: 'cell_density_tc'
-        },
-        {
-          data: 'cell_density_indrop'
-        },
-        {
-          data: 'collect_date'
-        },
-        {
-          data: 'library_tube_id'
-        },
-        {
-          data: 'pool_id'
-        },
-        {
-          data: 'Total Reads'
-        },
-        {
-          data: 'Multimapped Reads Aligned (STAR)'
-        },
-        {
-          data: 'Unique Reads Aligned (STAR)'
-        },
-        {
-          data: 'Total aligned UMIs (ESAT)'
-        },
-        {
-          data: 'Total deduped UMIs (ESAT)'
-        },
-        {
-          data: 'Duplication Rate'
-        },
-        {
-          data: 'Number of Cells'
-        },
-        {
-          data: 'Mean UMIs per Cell'
-        },
-        {
-          data: 'Number of Genes'
-        },
-        {
-          data: 'Mean Genes per Cell'
-        },
-        {
-          data: 'date_created'
-        },
-        {
-          data: 'owner'
-        },
-        {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            let btn = '';
-            if (oData.run_url) {
-              var run_url = oData.run_url;
-              btn = `<a href="${run_url}" target="_blank">View Run</a>`;
-            }
-            $(nTd).html(btn);
-          }
+    const mainCols = [
+      'name',
+      'status',
+      'collection_name',
+      'project_name',
+      'patient',
+      'aliquot',
+      'clinic_phen',
+      'lesional',
+      'patient_note',
+      'cell_density_tc',
+      'cell_density_indrop',
+      'collect_date',
+      'library_tube_id',
+      'pool_id',
+      'sample_summary.Total Reads',
+      'sample_summary.Multimapped Reads Aligned (STAR)',
+      'sample_summary.Unique Reads Aligned (STAR)',
+      'sample_summary.Total aligned UMIs (ESAT)',
+      'sample_summary.Total deduped UMIs (ESAT)',
+      'sample_summary.Duplication Rate',
+      'sample_summary.Number of Cells',
+      'sample_summary.Mean UMIs per Cell',
+      'sample_summary.Number of Genes',
+      'sample_summary.Mean Genes per Cell',
+      'date_created',
+      'owner'
+    ];
+    const showHideCols = [];
+    let columns = [];
+    for (var i = 0; i < mainCols.length; i++) {
+      columns.push({ data: mainCols[i] });
+    }
+    columns.push({
+      data: null,
+      fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
+        let btn = '';
+        if (oData.run_url) {
+          var run_url = oData.run_url;
+          btn = `<a href="${run_url}" target="_blank">View Run</a>`;
         }
-      ],
+        $(nTd).html(btn);
+      }
+    });
+
+    var dataTableObj = {
+      columns: columns,
       select: {
         style: 'multi',
         selector: 'td:not(.no_select_row)'
@@ -213,7 +175,8 @@ var refreshDmetaTable = function(data, id) {
         //   className: 'no_select_row'
         // },
         { defaultContent: '-', targets: '_all' } //hides undefined error
-      ]
+      ],
+      initComplete: initCompDmetaTable
     };
     dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
     dataTableObj.destroy = true;
@@ -230,8 +193,14 @@ var refreshDmetaTable = function(data, id) {
     console.log(dataTableObj);
     console.log(TableID);
 
-    var dmetaTable = $(TableID).DataTable(dataTableObj);
-    console.log(TableID);
+    $scope.dmetaTable = $(TableID).DataTable(dataTableObj);
+    $('a.toggle-vis').on('click', function(e) {
+      e.preventDefault();
+      // Get the column API object
+      var column = $scope.dmetaTable.column($(this).attr('data-column'));
+      // Toggle the visibility
+      column.visible(!column.visible());
+    });
   }
   //    else {
   //        var dmetaTable = $(TableID).DataTable();

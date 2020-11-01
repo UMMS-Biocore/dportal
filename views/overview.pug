@@ -9,6 +9,10 @@ block view
             div.fade-in
               div.card
                 div.card-body
+                  div Toggle column: 
+                    a.toggle-vis(data-column="0") Name
+                    a.toggle-vis(data-column="1") Status
+                    a.toggle-vis(data-column="2") Collection
                   div.table-responsive(style="overflow-x:auto; width:100%")
                     table#dmetaDetailedTable.table.table-striped(style='white-space: nowrap; table-layout:fixed; width:100%' cellspacing="0")
                       thead
