@@ -36,11 +36,11 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         use: ['babel-loader'] //convert ES6 to support old browsers
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
+        loader: 'file-loader'
       }
-      // {
-      //   test: /datatables\.net.*/,
-      //   loader: 'imports?define=>false'
-      // }
     ]
   },
   plugins: [

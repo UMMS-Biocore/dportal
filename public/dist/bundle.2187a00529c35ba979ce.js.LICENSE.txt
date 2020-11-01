@@ -641,6 +641,8 @@
 
 /*! ./dispatchRequest */
 
+/*! ./dmetaTable */
+
 /*! ./enhanceError */
 
 /*! ./es6.array.iterator */
@@ -655,6 +657,8 @@
 
 /*! ./helpers/spread */
 
+/*! ./jsfuncs */
+
 /*! ./lib/axios */
 
 /*! ./login */
@@ -668,6 +672,110 @@
 /*! ./utils */
 
 /*! @babel/polyfill */
+
+/*! CommonJS bailout: exports is used directly at 275:0-7 */
+
+/*! CommonJS bailout: exports is used directly at 276:0-7 */
+
+/*! CommonJS bailout: module.exports is used directly at 10:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 11:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 12:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 13:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 13:1-15 */
+
+/*! CommonJS bailout: module.exports is used directly at 14:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 15:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 16:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 18:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 18:43-57 */
+
+/*! CommonJS bailout: module.exports is used directly at 19:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 1:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 1:11-25 */
+
+/*! CommonJS bailout: module.exports is used directly at 230:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 23:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 27:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 27:2-16 */
+
+/*! CommonJS bailout: module.exports is used directly at 2:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 2:13-27 */
+
+/*! CommonJS bailout: module.exports is used directly at 30:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 31:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 322:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 325:2-16 */
+
+/*! CommonJS bailout: module.exports is used directly at 34:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 39:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 3:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 40:15-29 */
+
+/*! CommonJS bailout: module.exports is used directly at 43:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 47:11-25 */
+
+/*! CommonJS bailout: module.exports is used directly at 480:7-21 */
+
+/*! CommonJS bailout: module.exports is used directly at 49:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 4:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 50:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 52:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 57:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 58:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 5:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 62:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 6:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 6:1-15 */
+
+/*! CommonJS bailout: module.exports is used directly at 6:15-29 */
+
+/*! CommonJS bailout: module.exports is used directly at 732:31-45 */
+
+/*! CommonJS bailout: module.exports is used directly at 7:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 81:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 8:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 94:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 97:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 9:0-14 */
+
+/*! CommonJS bailout: module.exports is used directly at 9:14-28 */
+
+/*! CommonJS bailout: this is used directly at 40:46-50 */
 
 /*! DataTables 1.10.22
  * ©2008-2020 SpryMedia Ltd - datatables.net/license
@@ -719,6 +827,8 @@
 
 /*! export __esModule [maybe provided (runtime-defined)] [no usage info] [provision prevents renaming (no use info)] -> ./node_modules/axios/lib/axios.js .__esModule */
 
+/*! export cleanSpecChar [provided] [no usage info] [missing usage info prevents renaming] */
+
 /*! export default [provided] [no usage info] [missing usage info prevents renaming] */
 
 /*! export f [provided] [no usage info] [missing usage info prevents renaming] */
@@ -730,6 +840,8 @@
 /*! export login [provided] [no usage info] [missing usage info prevents renaming] */
 
 /*! export logout [provided] [no usage info] [missing usage info prevents renaming] */
+
+/*! export refreshDmetaTable [provided] [no usage info] [missing usage info prevents renaming] */
 
 /*! export showAlert [provided] [no usage info] [missing usage info prevents renaming] */
 
@@ -767,6 +879,8 @@
 
 /*! runtime requirements: __webpack_require__, __webpack_require__.n, __webpack_require__.r, __webpack_exports__, __webpack_require__.d, __webpack_require__.* */
 
+/*! runtime requirements: __webpack_require__, __webpack_require__.r, __webpack_exports__, __webpack_require__.d, __webpack_require__.* */
+
 /*! runtime requirements: __webpack_require__, module */
 
 /*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.d, __webpack_require__.* */
@@ -792,6 +906,14 @@
 /*!*****************************!*\
   !*** ./public/js/alerts.js ***!
   \*****************************/
+
+/*!******************************!*\
+  !*** ./public/js/jsfuncs.js ***!
+  \******************************/
+
+/*!*********************************!*\
+  !*** ./public/js/dmetaTable.js ***!
+  \*********************************/
 
 /*!*************************************!*\
   !*** ./node_modules/axios/index.js ***!
