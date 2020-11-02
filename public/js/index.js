@@ -1,21 +1,31 @@
 /* eslint-disable */
 import '@babel/polyfill';
+import { login, logout } from './login';
+import { refreshDmetaTable } from './dmetaTable';
+import { showAlert } from './alerts';
+import axios from 'axios';
 var $ = require('jquery');
-window.$ = $;
-// Datatables Core
-require('datatables.net');
-// Datatables Bootstrap 4
-require('datatables.net-bs4/js/dataTables.bootstrap4.js');
-require('datatables.net-bs4/css/dataTables.bootstrap4.css');
+window.$ = $; // jquery installation
+require('datatables.net'); // Datatables Core
+require('datatables.net-bs4/js/dataTables.bootstrap4.js'); // Datatables Bootstrap 4
+require('datatables.net-bs4/css/dataTables.bootstrap4.css'); // Datatables Bootstrap 4
+// import './../css/style.css';
+import './../vendors/@coreui/icons/css/free.min.css';
+import './../vendors/@coreui/icons/css/flag.min.css';
+import './../vendors/@coreui/icons/css/brand.min.css';
+
+// $(function() {
+//   $('[data-toggle="tooltip"]').tooltip();
+// });
+// require('@coreui/icons/css/all.min.css');
 
 // import 'bootstrap';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import './../css/style.css';
 // import './../css/custom.css';
 
-import { login, logout } from './login';
-import { showAlert } from './alerts';
-import axios from 'axios';
+// GLOBAL SCOPE
+let $scope = {};
 
 // GLOBAL ENV CONFIG
 const envConf = document.querySelector('#session-env-config');
@@ -81,164 +91,6 @@ if (loginForm)
 
 const alertMessage = document.querySelector('body').dataset.alert;
 if (alertMessage) showAlert('success', alertMessage, 20);
-
-console.log($('#detailedSample'));
-
-var refreshDmetaTable = function(data, id) {
-  var TableID = '#' + id + 'Table';
-  var searchBarID = '#' + id + 'SearchBar';
-
-  var prepareDmetaData = data => {
-    let ret = [];
-    if (data.data && data.data.data) {
-      ret = data.data.data;
-      for (var i = 0; i < ret.length; i++) {
-        if (ret[i].sample_summary) {
-          let sample_summary = $.extend(true, {}, ret[i].sample_summary);
-          delete ret[i].sample_summary;
-          console.log(sample_summary);
-          //merge sample_summary into ret[i]
-          $.extend(ret[i], sample_summary);
-        }
-      }
-    }
-    return ret;
-  };
-
-  if (!$.fn.DataTable.isDataTable(TableID)) {
-    var dataTableObj = {
-      columns: [
-        {
-          data: 'name'
-        },
-        {
-          data: 'status'
-        },
-        {
-          data: 'collection_name'
-        },
-        {
-          data: 'project_name'
-        },
-        {
-          data: 'patient'
-        },
-        {
-          data: 'aliquot'
-        },
-        {
-          data: 'clinic_phen'
-        },
-        {
-          data: 'lesional'
-        },
-        {
-          data: 'patient_note'
-        },
-        {
-          data: 'cell_density_tc'
-        },
-        {
-          data: 'cell_density_indrop'
-        },
-        {
-          data: 'collect_date'
-        },
-        {
-          data: 'library_tube_id'
-        },
-        {
-          data: 'pool_id'
-        },
-        {
-          data: 'Total Reads'
-        },
-        {
-          data: 'Multimapped Reads Aligned (STAR)'
-        },
-        {
-          data: 'Unique Reads Aligned (STAR)'
-        },
-        {
-          data: 'Total aligned UMIs (ESAT)'
-        },
-        {
-          data: 'Total deduped UMIs (ESAT)'
-        },
-        {
-          data: 'Duplication Rate'
-        },
-        {
-          data: 'Number of Cells'
-        },
-        {
-          data: 'Mean UMIs per Cell'
-        },
-        {
-          data: 'Number of Genes'
-        },
-        {
-          data: 'Mean Genes per Cell'
-        },
-        {
-          data: 'date_created'
-        },
-        {
-          data: 'owner'
-        },
-        {
-          data: null,
-          fnCreatedCell: function(nTd, sData, oData, iRow, iCol) {
-            let btn = '';
-            if (oData.run_url) {
-              var run_url = oData.run_url;
-              btn = `<a href="${run_url}" target="_blank">View Run</a>`;
-            }
-            $(nTd).html(btn);
-          }
-        }
-      ],
-      select: {
-        style: 'multi',
-        selector: 'td:not(.no_select_row)'
-      },
-      order: [[24, 'desc']],
-      columnDefs: [
-        // {
-        //   targets: [3, 4],
-        //   className: 'disp_none'
-        // },
-        // {
-        //   targets: [6],
-        //   className: 'no_select_row'
-        // },
-        { defaultContent: '-', targets: '_all' } //hides undefined error
-      ]
-    };
-    dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
-    dataTableObj.destroy = true;
-    dataTableObj.data = prepareDmetaData(data);
-    dataTableObj.hover = true;
-    // speed up the table loading
-    dataTableObj.deferRender = true;
-    dataTableObj.scroller = true;
-    dataTableObj.scrollCollapse = true;
-    // dataTableObj.scrollY = 600;
-    dataTableObj.scrollX = 500;
-    dataTableObj.sScrollX = true;
-    // dataTableObj.autoWidth = false;
-    console.log(dataTableObj);
-    console.log(TableID);
-
-    var dmetaTable = $(TableID).DataTable(dataTableObj);
-    console.log(TableID);
-  }
-  //    else {
-  //        var dmetaTable = $(TableID).DataTable();
-  //        projectTable.ajax.reload(null, false);
-  //    }
-  //    dmetaTable.column(0).checkboxes.deselect();
-};
 
 (async () => {
   try {

@@ -1,3 +1,8 @@
+02.10.2020 Version 0.0.10
+Primary color changed
+Configure Visible Columns added
+webpack config updated. Js cashing fixed.
+
 23.09.2020 Version 0.0.9
 ${req.protocol}://${req.get('host')} replaced with process.env.BASE_URL.
 
