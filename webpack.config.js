@@ -18,7 +18,7 @@ module.exports = {
     ignored: ['node_modules/**']
   },
   mode: 'development',
-  devtool: 'inline-source-map', //Webpack default uses eval and throws `unsafe-eval` error
+  devtool: 'source-map', //Webpack default uses eval and throws `unsafe-eval` error
   module: {
     // how to import files
     rules: [
@@ -41,6 +41,13 @@ module.exports = {
       {
         test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
         loader: 'file-loader'
+      },
+      {
+        test: require.resolve('jquery'),
+        loader: 'expose-loader',
+        options: {
+          exposes: ['$', 'jQuery']
+        }
       }
     ]
   },
@@ -49,7 +56,6 @@ module.exports = {
       filename: 'contenthash.pug',
       filetype: 'pug',
       template: path.resolve(__dirname, './views/_partials/empty.pug')
-      // hash: true
     }),
     new TerserPlugin(), // minimize js content
     new MiniCssExtractPlugin({
@@ -58,11 +64,5 @@ module.exports = {
     new CleanWebpackPlugin({
       cleanAfterEveryBuildPatterns: ['public/dist']
     }) // removes unused files in dist folder
-    // new webpack.ProvidePlugin({
-    //   $: 'jquery',
-    //   jQuery: 'jquery',
-    //   'window.jQuery': 'jquery',
-    //   'window.$': 'jquery'
-    // })
   ]
 };
