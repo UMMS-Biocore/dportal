@@ -1,16 +1,38 @@
 extends /_layout/default
 
 block view
-  div.c-body
-    main.c-main
-      div.container-fluid
-        div#ui-view
-          div
-            div.fade-in
-              div.card
-                div.card-body
-                  div.table-responsive(style="overflow-x:auto; width:100%")
-                    table#dmetaDetailedTable.table.table-striped(style='white-space: nowrap; table-layout:fixed; width:100%' cellspacing="0")
-                      thead
-                        tr#dmetaDetailedTableHeader
-                      tbody
+  div#ui-view
+    div
+      div.fade-in
+        div.row
+          .col-sm-6.col-lg-4
+            div.card
+              div.card-body
+                canvas#basicBarChart1(style={width:400, height:100})
+          .col-sm-6.col-lg-4
+            div.card
+              div.card-body
+                canvas#basicBarChart2(style={width:400, height:100})
+          .col-sm-6.col-lg-4
+            div.card
+              div.card-body
+                canvas#basicBarChart3(style={width:400, height:100})
+        div.card
+          div.card-body
+            div.row
+              div.col-sm-3
+                div.row
+                  div.col-sm-1 
+                  div.col-sm-11(style="margin-left:15px;")   
+                    div(style="height:61px;")        
+                    div.card(style="margin-bottom:0px; border-radius:0px;")
+                      div.card-header(style="") 
+                        i.cil-filter 
+                        | #[strong Properties]
+                    div#mainSidebarFilter
+              .col-sm-9
+                div.table-responsive(style="overflow-x:auto; width:100%")
+                  table#dmetaDetailedTable.table.table-striped(style='white-space: nowrap;  table-layout:fixed; width:100%' cellspacing="0")
+                    thead
+                      tr#dmetaDetailedTableHeader
+                    tbody

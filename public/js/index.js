@@ -2,10 +2,15 @@
 import '@babel/polyfill';
 import { login, logout } from './login';
 import { refreshDmetaTable } from './dmetaTable';
+import { prepareBarGraph } from './chartjs';
+import { prepareBreadcrumb } from './breadcrumb';
+import { prepareSidebar } from './sidebar';
 import { showAlert } from './alerts';
 import axios from 'axios';
-var $ = require('jquery');
-window.$ = $; // jquery installation
+import 'jquery';
+import '@coreui/coreui';
+// import '@coreui/coreui/dist/css/coreui.min.css';
+
 require('datatables.net'); // Datatables Core
 require('datatables.net-bs4/js/dataTables.bootstrap4.js'); // Datatables Bootstrap 4
 require('datatables.net-bs4/css/dataTables.bootstrap4.css'); // Datatables Bootstrap 4
@@ -101,7 +106,39 @@ if (alertMessage) showAlert('success', alertMessage, 20);
       data: send
     });
     console.log(res.data);
-    refreshDmetaTable(res.data, 'dmetaDetailed');
+    var prepareDmetaData = data => {
+      let ret = [];
+      if (data.data && data.data.data) {
+        ret = data.data.data;
+      }
+      return ret;
+    };
+    const data = prepareDmetaData(res.data);
+
+    refreshDmetaTable(data, 'dmetaDetailed');
+    prepareBarGraph(data, {
+      dataCol: 'clinic_phen',
+      xLabel: 'Clinical Phenotype',
+      yLabel: 'Samples',
+      colorSchema: 'Tableau10',
+      chartId: 'basicBarChart1'
+    });
+    prepareBarGraph(data, {
+      dataCol: 'lesional',
+      xLabel: 'Skin',
+      yLabel: 'Samples',
+      colorSchema: 'Tableau10',
+      chartId: 'basicBarChart2'
+    });
+    prepareBarGraph(data, {
+      dataCol: 'status',
+      xLabel: 'Status',
+      yLabel: 'Samples',
+      colorSchema: 'Tableau10',
+      chartId: 'basicBarChart3'
+    });
+    prepareBreadcrumb(data);
+    prepareSidebar(data);
   } catch (err) {
     console.log(err);
     showAlert('error', err);

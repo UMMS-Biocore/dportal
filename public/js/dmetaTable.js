@@ -3,13 +3,16 @@ import { cleanSpecChar } from './jsfuncs';
 
 // GLOBAL SCOPE
 let $s = {};
-//Config for Dmeta table
+export const getDmetaColumns = () => {
+  return $s;
+};
+// Config for Dmeta table
 // Main columns for table
 $s.mainCols = [
   'name',
   'status',
-  'collection_name',
-  'project_name',
+  'experiment_series',
+  'experiment',
   'patient',
   'aliquot',
   'clinic_phen',
@@ -38,8 +41,8 @@ $s.mainCols = [
 $s.mainColLabels = [
   'Name',
   'Status',
-  'Collection',
-  'Project',
+  'Experiment series',
+  'Experiment',
   'Patient',
   'Aliquot',
   'Clinical phenotype',
@@ -69,8 +72,7 @@ $s.mainColLabels = [
 $s.initialShowCols = [
   'name',
   'status',
-  'collection_name',
-  'project_name',
+  'experiment',
   'patient',
   'aliquot',
   'clinic_phen',
@@ -95,8 +97,8 @@ $s.showHideCols.push({
   main: [
     'name',
     'status',
-    'collection_name',
-    'project_name',
+    'experiment_series',
+    'experiment',
     'patient',
     'aliquot',
     'clinic_phen',
@@ -123,6 +125,32 @@ $s.showHideCols.push({
     'sample_summary.Mean Genes per Cell'
   ]
 });
+
+$s.sidebarFilterCols = [
+  'status',
+  'experiment_series',
+  'experiment',
+  'patient',
+  'aliquot',
+  'clinic_phen',
+  'lesional',
+  'pool_id',
+  'owner'
+];
+
+// input selected mainCols in array
+// return labels in array
+export const getSelectedColLabels = selCols => {
+  let colLabels = [];
+  for (var i = 0; i < selCols.length; i++) {
+    console.log(selCols[i]);
+    const ind = $s.mainCols.indexOf(selCols[i]);
+    if (ind > -1) {
+      colLabels.push($s.mainColLabels[ind]);
+    }
+  }
+  return colLabels;
+};
 
 const getHideColIds = () => {
   let hideCols = [];
@@ -176,13 +204,6 @@ export const refreshDmetaTable = function(data, id) {
   var TableID = '#' + id + 'Table';
   var searchBarID = '#' + id + 'SearchBar';
   insertTableHeaders();
-  var prepareDmetaData = data => {
-    let ret = [];
-    if (data.data && data.data.data) {
-      ret = data.data.data;
-    }
-    return ret;
-  };
 
   var initCompDmetaTable = function(settings, json) {
     console.log('initCompDmetaTable');
@@ -203,7 +224,7 @@ export const refreshDmetaTable = function(data, id) {
     $('#' + toogleShowColsId).append(colSelectBtn);
     $(searchBarID).append(colSelectMenu);
 
-    // Bind event handler for checkbox
+    // Bind event handler for toogle-vis checkbox
     $('input.toggle-vis').on('change', function(e) {
       var column = api.column($(this).attr('data-column'));
       column.visible(this.checked);
@@ -216,6 +237,33 @@ export const refreshDmetaTable = function(data, id) {
         $("input.toggle-vis[data-column='" + i + "']").prop('checked', false);
       }
     }
+
+    // Bind event handler for toggle-filter checkbox at the sidebar
+    $(document).on('change', 'input.toggle-filter', function(e) {
+      var dataColumn = $(this).attr('data-column');
+      let vals = [];
+      var dataFilters = $(`input.toggle-filter[data-column="${dataColumn}"]`);
+      for (var k = 0; k < dataFilters.length; k++) {
+        if ($(dataFilters[k]).is(':checked')) {
+          vals.push($(dataFilters[k]).attr('data-val'));
+        }
+      }
+      var valReg = '';
+      for (var k = 0; k < vals.length; k++) {
+        var val = $.fn.dataTable.util.escapeRegex(vals[k]);
+        if (val) {
+          if (k + 1 !== vals.length) {
+            valReg += val + '|';
+          } else {
+            valReg += val;
+          }
+        }
+      }
+      api
+        .column(dataColumn)
+        .search(valReg ? '(^|,)' + valReg + '(,|$)' : '', true, false)
+        .draw();
+    });
   };
 
   if (!$.fn.DataTable.isDataTable(TableID)) {
@@ -253,7 +301,7 @@ export const refreshDmetaTable = function(data, id) {
     };
     dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
     dataTableObj.destroy = true;
-    dataTableObj.data = prepareDmetaData(data);
+    dataTableObj.data = data;
     dataTableObj.hover = true;
     // speed up the table loading
     dataTableObj.deferRender = true;

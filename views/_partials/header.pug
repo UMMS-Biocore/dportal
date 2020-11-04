@@ -13,7 +13,7 @@ header.c-header.c-header-light.c-header-fixed.c-header-with-subheader
   if !starter
     ul.c-header-nav.d-md-down-none
       li.c-header-nav-item.px-3
-        a.c-header-nav-link(href="/") D-Portal
+        a.c-header-nav-link(href="/" style='font-size:larger;') D-Portal
       //- li.c-header-nav-item.px-3
       //-   a.c-header-nav-link(href="#") Users
       //- li.c-header-nav-item.px-3
@@ -27,6 +27,8 @@ header.c-header.c-header-light.c-header-fixed.c-header-with-subheader
               span= user.name.split(' ')[0]
         else
           a.c-header-nav-link.nav__el--login(href='/login') Log in
+  .c-subheader.px-3
+    include ./../_partials/breadcrumb.pug
       //- li.c-header-nav-item.d-md-down-none.mx-2
       //-   a.c-header-nav-link(href="#")
       //-     svg.c-icon
@@ -95,5 +97,5 @@ header.c-header.c-header-light.c-header-fixed.c-header-with-subheader
           //-   svg.c-icon.mr-2
           //-     use(xlink:href="node_modules/@coreui/icons/sprites/free.svg#cil-account-logout")
           //-   |  Logout
-  //- .c-subheader.px-3
-    //- include ./../_partials/breadcrumb.pug
+
+    
