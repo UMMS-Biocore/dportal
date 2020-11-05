@@ -1,5 +1,27 @@
-/* .datatable td span {
-  max-width: 400px;
-  display: block;
+td.details-control {
+  cursor: pointer;
+}
+
+/* 
+Run Summary in Dmeta table
+*/
+.summary_card_hero {
+  text-align: center;
+  color: rgba(88, 165, 50, 1);
+  font-size: 36px;
+  height: 40px;
+}
+
+.summary_card table td:first-child {
+  text-align: left;
+}
+
+.summary_card table td {
+  padding: 1px 0 1px 0;
   overflow: hidden;
-} */
+  text-align: right;
+}
+
+.table-not-striped tbody tr:nth-of-type(odd) {
+  background-color: transparent !important;
+}

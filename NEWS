@@ -1,15 +1,18 @@
-04.10.2020 Version 0.0.11
+05.11.2020 Version 0.0.12
+File, Run and Analysis tabs are added to Dmeta table child row.
+
+04.11.2020 Version 0.0.11
 Bar graphs, property filters added.
 
-02.10.2020 Version 0.0.10
+02.11.2020 Version 0.0.10
 Primary color changed
 Configure Visible Columns added
 webpack config updated. Js cashing fixed.
 
-23.09.2020 Version 0.0.9
+23.10.2020 Version 0.0.9
 ${req.protocol}://${req.get('host')} replaced with process.env.BASE_URL.
 
-16.09.2020 Version 0.0.8
+16.10.2020 Version 0.0.8
 Event Route and event tracker feature added for data routes.
 'Server routes' added.
 
