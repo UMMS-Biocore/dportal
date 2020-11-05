@@ -396,10 +396,11 @@ export const refreshDmetaTable = function(data, id) {
       );
 
       const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+      let runUrlDiv = '';
+      if (data.run_url)
+        runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${data.run_url}"> Go to run <i class="cil-external-link"></i></a></h5>`;
       var content = `
-      <h5 style="margin-top:20px;">
-       <a target="_blank" href="${data.run_url}"> Go to run <i class="cil-external-link"></i> </a>
-      </h5>
+       ${runUrlDiv}
       <div style="margin-top:20px; width:${width}px;">
         <div class="row">
           ${blocks}
