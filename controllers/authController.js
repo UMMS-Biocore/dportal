@@ -313,7 +313,7 @@ exports.isLoggedInView = async (req, res, next) => {
     req.session.redirectURL = '/';
     const originalUrl = `${process.env.BASE_URL}`;
     res.redirect(
-      `${process.env.SSO_CHECKLOGIN_URL}?redirect_original=${originalUrl}&redirect_uri=${process.env.SSO_REDIRECT_URL}&response_type=code&client_id=${process.env.CLIENT_ID}&scope=offline_access`
+      `${process.env.SSO_URL}/api/v1/oauth/check?redirect_original=${originalUrl}&redirect_uri=${process.env.SSO_REDIRECT_URL}&response_type=code&client_id=${process.env.CLIENT_ID}&scope=offline_access`
     );
   } else if (process.env.SSO_LOGIN === 'true' && req.session.loginCheck) {
     req.session.loginCheck = false;
@@ -381,8 +381,13 @@ exports.ssoReceiveToken = async (req, res, next) => {
 
     res.locals.user = updatedUser;
     sendTokenCookie(accessToken, req, res);
-    // res.redirect(req.session.redirectURL);
-    res.redirect('/after-sso');
+    if (!req.session.loginCheck) {
+      // login on pop up window
+      res.redirect('/after-sso');
+    } else {
+      // sso login without click signin
+      res.redirect(req.session.redirectURL);
+    }
   } catch (e) {
     return next(new AppError('Login Failed', 403));
   }

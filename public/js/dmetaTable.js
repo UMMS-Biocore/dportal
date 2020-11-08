@@ -407,11 +407,9 @@ export const refreshDmetaTable = function(data, id) {
         </div>
       </div>`;
 
-      // tableRows += getBodyRow(``);
       return content;
     };
     var insertFileContent = function(data, id) {
-      console.log(data);
       let tableLabels = [];
       let tableValues = [];
       tableLabels.push('Name');
@@ -458,7 +456,6 @@ export const refreshDmetaTable = function(data, id) {
     };
 
     const formatChildRow = rowdata => {
-      console.log(rowdata);
       const rowid = cleanSpecChar(rowdata._id);
       const fileTabID = 'fileTab_' + rowid;
       const runTabID = 'runTab_' + rowid;

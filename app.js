@@ -36,6 +36,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Set security HTTP headers
 app.use(helmet());
 
+// app.use(
+//   helmet.contentSecurityPolicy({
+//     defaultSrc: ['*'],
+//     childSrc: ['blob:'],
+//     scriptSrc: ['*'],
+//     styleSrc: ["'self'"],
+//     imgSrc: ["'self'"],
+//     connectSrc: ["'self'"],
+//     fontSrc: ["'self'"],
+//     objectSrc: ["'none'"],
+//     mediaSrc: ["'self'"],
+//     frameSrc: ["'none'"]
+//   })
+// );
+
 // Development Logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));

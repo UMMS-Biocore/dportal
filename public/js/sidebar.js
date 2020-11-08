@@ -31,8 +31,6 @@ const getChildDiv = (collapseID, parentColIndex, dataSummary) => {
 };
 
 const insertSidebarBlocks = (cols, colLabels, dataSummary, colData) => {
-  console.log(cols);
-  console.log(dataSummary);
   let div = '';
   for (var i = 0; i < cols.length; i++) {
     const colName = cols[i];
@@ -55,7 +53,7 @@ export const prepareSidebar = function(data) {
   const colData = getDmetaColumns();
   const sideCols = colData.sidebarFilterCols;
   const colLabels = getSelectedColLabels(colData.sidebarFilterCols);
-  console.log('colLabels', colLabels);
+
   if (sideCols) {
     const dataSummary = createDataSummary(data, sideCols);
     insertSidebarBlocks(sideCols, colLabels, dataSummary, colData);

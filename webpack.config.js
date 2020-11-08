@@ -52,6 +52,9 @@ module.exports = {
     ]
   },
   plugins: [
+    new CleanWebpackPlugin({
+      cleanEveryAfterBuildPatterns: [path.resolve(__dirname, './public/dist'), '!*contenthash.pug']
+    }), // removes unused files in dist folder
     new HtmlPlugin({
       filename: 'contenthash.pug',
       filetype: 'pug',
@@ -60,9 +63,6 @@ module.exports = {
     new TerserPlugin(), // minimize js content
     new MiniCssExtractPlugin({
       filename: 'style.css'
-    }), // extract css into separate file
-    new CleanWebpackPlugin({
-      cleanAfterEveryBuildPatterns: ['public/dist']
-    }) // removes unused files in dist folder
+    }) // extract css into separate file
   ]
 };
