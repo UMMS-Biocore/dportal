@@ -487,20 +487,15 @@ export const refreshDmetaTable = function(data, id) {
       const content = `
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" searchtab="true" id="${fileTabID}">
-          <div class="panel panel-default" style="display: block;">
-            <div class="panel-body">
-                <div class="box-body tab-pane active">
-                  ${fileContent}
-                </div>
-            </div>
-          </div>
+          ${fileContent}
         </div>
         <div role="tabpanel" class="tab-pane" id="${runTabID}" searchtab="true">
         ${runContent}
         </div>
         <div role="tabpanel" class="tab-pane" id="${analysisTabID}" searchtab="true">
         ${analysisContent}
-        </div>`;
+        </div>
+      </div>`;
 
       ret += '<div role="tabpanel">';
       ret += header;
