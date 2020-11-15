@@ -29,6 +29,8 @@
     "css": "^3.0.0",
     "datatables.net": "^1.10.22",
     "datatables.net-bs4": "^1.10.22",
+    "datatables.net-colreorder": "^1.5.2",
+    "datatables.net-colreorder-bs4": "^1.5.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.0",
