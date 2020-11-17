@@ -582,9 +582,4 @@ export const refreshDmetaTable = function(data, id) {
     // dataTableObj.autoWidth = false;
     $s.dmetaTable = $(TableID).DataTable(dataTableObj);
   }
-  //    else {
-  //        var dmetaTable = $(TableID).DataTable();
-  //        projectTable.ajax.reload(null, false);
-  //    }
-  //    dmetaTable.column(0).checkboxes.deselect();
 };

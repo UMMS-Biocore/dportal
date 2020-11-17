@@ -14,6 +14,8 @@ import '@coreui/coreui';
 require('datatables.net'); // Datatables Core
 require('datatables.net-bs4/js/dataTables.bootstrap4.js'); // Datatables Bootstrap 4
 require('datatables.net-bs4/css/dataTables.bootstrap4.css'); // Datatables Bootstrap 4
+// require('datatables.net-colreorder');
+// require('datatables.net-colreorder-bs4');
 // import './../css/style.css';
 import './../vendors/@coreui/icons/css/free.min.css';
 import './../vendors/@coreui/icons/css/flag.min.css';
@@ -99,7 +101,7 @@ if (alertMessage) showAlert('success', alertMessage, 20);
 
 (async () => {
   try {
-    const send = { url: '/api/v1/data/sample/detailed' };
+    const send = { url: '/api/v1/projects/vitiligo/data/sample/detailed' };
     const res = await axios({
       method: 'POST',
       url: '/api/v1/dmeta',
