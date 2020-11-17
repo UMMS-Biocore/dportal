@@ -101,7 +101,7 @@ if (alertMessage) showAlert('success', alertMessage, 20);
 
 (async () => {
   try {
-    const send = { url: '/api/v1/data/sample/detailed' };
+    const send = { url: '/api/v1/projects/vitiligo/data/sample/detailed' };
     const res = await axios({
       method: 'POST',
       url: '/api/v1/dmeta',
