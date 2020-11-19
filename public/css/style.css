@@ -5193,7 +5193,7 @@ html:not([dir='rtl']) .dropleft .dropdown-toggle:empty::after {
 
 .form-control:disabled,
 .form-control[readonly] {
-  background-color: #d8dbe0;
+  background-color: #d8dbe047;
   opacity: 1;
 }
 

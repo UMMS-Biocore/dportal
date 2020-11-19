@@ -44,6 +44,7 @@ const logOutBtn = document.querySelector('.nav__el--logout');
 const logInBtn = document.querySelector('.nav__el--login');
 const afterSsoClose = document.querySelector('.after-sso-close');
 const loginForm = document.querySelector('.form--login');
+const dportalVersionBut = document.querySelector('#dportalVersionBut');
 
 if (logOutBtn) logOutBtn.addEventListener('click', logout);
 
@@ -141,6 +142,24 @@ if (alertMessage) showAlert('success', alertMessage, 20);
     });
     prepareBreadcrumb(data);
     prepareSidebar(data);
+
+    if (dportalVersionBut) {
+      var checkLoad = $('#versionNotes').attr('readonly');
+      if (typeof checkLoad === typeof undefined || checkLoad === false) {
+        try {
+          const res = await axios({
+            method: 'GET',
+            url: '/api/v1/misc/changelog'
+          });
+          const changeLogData = res.data.data;
+          $('#versionNotes').val(JSON.parse(changeLogData));
+          $('#versionNotes').attr('readonly', 'readonly');
+        } catch (err) {
+          console.log(err);
+          return '';
+        }
+      }
+    }
   } catch (err) {
     console.log(err);
     showAlert('error', err);

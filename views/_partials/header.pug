@@ -1,32 +1,35 @@
 header.c-header.c-header-light.c-header-fixed.c-header-with-subheader
-  button.c-header-toggler.c-class-toggler.d-lg-none.mfe-auto(type="button" data-target="#sidebar" data-class="c-sidebar-show")
-    //- svg.c-icon.c-icon-lg
-      //- use(xlink:href="node_modules/@coreui/icons/sprites/free.svg#cil-menu")
-      
-  a.c-header-brand.d-lg-none(href="#")
-    .c-header-nav-link(href="/") D-Portal
-    //- svg(width="118" height="46" alt="Dportal Logo")
-      //- use(xlink:href="assets/brand/coreui.svg#full")
-  //- button.c-header-toggler.c-class-toggler.mfs-3.d-md-down-none(type="button" data-target="#sidebar" data-class="c-sidebar-lg-show" responsive="true")
-    svg.c-icon.c-icon-lg
-      use(xlink:href="node_modules/@coreui/icons/sprites/free.svg#cil-menu")
-  if !starter
-    ul.c-header-nav.d-md-down-none
+  ul.c-header-nav.d-md-down
+    li.c-header-nav-item.px-3
+      a.c-header-nav-link(href="/" style='font-size:larger; margin-right:10px;margin-left:10px; font-weight:700;') D-Portal
+  ul.c-header-nav.d-md-down
+    li.c-header-nav-item.px-3
+      a.c-header-nav-link(href="/") Dashboard
+    if user && user.role == 'admin'
       li.c-header-nav-item.px-3
-        a.c-header-nav-link(href="/" style='font-size:larger;') D-Portal
-      //- li.c-header-nav-item.px-3
-      //-   a.c-header-nav-link(href="#") Users
-      //- li.c-header-nav-item.px-3
-      //-   a.c-header-nav-link(href="#") Settings
-    ul.c-header-nav.ml-auto.mr-4
+        a.c-header-nav-link(href="/admin-overview") Admin
+    li.c-header-nav-item.px-3
+  ul.c-header-nav.ml-auto.mr-4
+    li.c-header-nav-item.dropdown(style="margin-right: 25px;")
+      if changeLogVersion
+        a#dportalVersionBut.c-header-nav-link(data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false")= "v" + changeLogVersion 
+        .dropdown-menu.dropdown-menu-right(aria-labelledby="dportalVersionBut" style="width:650px; padding:20px;")
+          div.panel.panel-default(style="margin:0px;")
+            div.panel-heading.clearfix
+              div.float-left
+                h5 Version Notes
+              div.float-right 
+                a(role="button" )
+                  span(aria-hidden="true") &times;
+            div.panel-body(style="padding:0px;")
+              textarea#versionNotes.form-control(rows="30" style="resize:none; ")
+    if user
+      a.c-header-nav-link.nav__el--logout(href="#") Log out
       li.c-header-nav-item.px-3
-        if user
-          a.c-header-nav-link.nav__el--logout(href="#") Log out
-          li.c-header-nav-item.px-3
-            a.c-header-nav-link
-              span= user.name.split(' ')[0]
-        else
-          a.c-header-nav-link.nav__el--login(href='/login') Log in
+        a.c-header-nav-link
+          span= user.name.split(' ')[0]
+    else
+      a.c-header-nav-link.nav__el--login(href='/login') Log in
   .c-subheader.px-3
     include ./../_partials/breadcrumb.pug
       //- li.c-header-nav-item.d-md-down-none.mx-2
