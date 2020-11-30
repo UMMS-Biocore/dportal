@@ -60,7 +60,7 @@ module.exports = {
       filetype: 'pug',
       template: path.resolve(__dirname, './views/_partials/empty.pug')
     }),
-    new TerserPlugin(), // minimize js content
+    // new TerserPlugin(), // minimize js content
     new MiniCssExtractPlugin({
       filename: 'style.css'
     }) // extract css into separate file

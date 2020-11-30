@@ -21,3 +21,11 @@ export const cleanSpecChar = n => {
   }
   return n;
 };
+
+export const prepareDmetaData = data => {
+  let ret = [];
+  if (data.data && data.data.data) {
+    ret = data.data.data;
+  }
+  return ret;
+};
