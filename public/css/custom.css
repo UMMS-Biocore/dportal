@@ -21,6 +21,9 @@ Run Summary in Dmeta table
   overflow: hidden;
   text-align: right;
 }
+div.card-body.summary_card {
+  white-space: normal;
+}
 
 .table-not-striped tbody tr:nth-of-type(odd) {
   background-color: transparent !important;

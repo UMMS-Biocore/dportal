@@ -1,6 +1,7 @@
 /* eslint-disable */
 import '@babel/polyfill';
 import { login, logout } from './login';
+import { prepareDmetaData } from './jsfuncs';
 import { refreshDmetaTable } from './dmetaTable';
 import { prepareBarGraph } from './chartjs';
 import { prepareBreadcrumb } from './breadcrumb';
@@ -102,23 +103,17 @@ if (alertMessage) showAlert('success', alertMessage, 20);
 
 (async () => {
   try {
-    const send = { url: '/api/v1/projects/vitiligo/data/sample/detailed' };
+    const project = 'vitiligo';
+    const send = { url: `/api/v1/projects/${project}/data/sample/detailed` };
     const res = await axios({
       method: 'POST',
       url: '/api/v1/dmeta',
       data: send
     });
     console.log(res.data);
-    var prepareDmetaData = data => {
-      let ret = [];
-      if (data.data && data.data.data) {
-        ret = data.data.data;
-      }
-      return ret;
-    };
     const data = prepareDmetaData(res.data);
 
-    refreshDmetaTable(data, 'dmetaDetailed');
+    refreshDmetaTable(data, 'dmetaDetailed', project);
     prepareBarGraph(data, {
       dataCol: 'clinic_phen',
       xLabel: 'Clinical Phenotype',

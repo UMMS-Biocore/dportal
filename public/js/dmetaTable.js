@@ -1,8 +1,9 @@
 /* eslint-disable */
-import { cleanSpecChar } from './jsfuncs';
+import axios from 'axios';
+import { cleanSpecChar, prepareDmetaData } from './jsfuncs';
 import example_analysis from './../assets/img/example_analysis.png'; // relative path to image
 // GLOBAL SCOPE
-let $s = {};
+let $s = { data: { file: {}, run: {} }, outCollections: [] };
 export const getDmetaColumns = () => {
   return $s;
 };
@@ -147,7 +148,6 @@ $s.sidebarFilterCols = [
 export const getSelectedColLabels = selCols => {
   let colLabels = [];
   for (var i = 0; i < selCols.length; i++) {
-    console.log(selCols[i]);
     const ind = $s.mainCols.indexOf(selCols[i]);
     if (ind > -1) {
       colLabels.push($s.mainColLabels[ind]);
@@ -204,7 +204,7 @@ const insertTableHeaders = () => {
   }
 };
 
-export const refreshDmetaTable = function(data, id) {
+export const refreshDmetaTable = function(data, id, project) {
   var TableID = '#' + id + 'Table';
   var searchBarID = '#' + id + 'SearchBar';
   insertTableHeaders();
@@ -291,16 +291,12 @@ export const refreshDmetaTable = function(data, id) {
       return text;
     };
 
-    const insertAnalysisContent = data => {
-      let ret = `<div style="margin-top:10px;"><img style="height:350px;" src="${example_analysis}" alt="Example run"></div>`;
-      return ret;
-    };
-
     const getTableFromList = (label, value) => {
-      if (!label[0] || !value[0]) return '';
+      if (!label[0]) return 'No data found.';
       let ret = '<table class="table-not-striped" style="width:100%"><tbody>';
-      for (var k = 0; k < value.length; k++) {
-        ret += `<tr><td>${label[k]}</td><td>${value[k]}</td></tr>`;
+      for (var k = 0; k < label.length; k++) {
+        const val = value[k] ? value[k] : '';
+        ret += `<tr><td>${label[k]}</td><td>${val}</td></tr>`;
       }
       ret += '</tbody></table>';
       return ret;
@@ -355,61 +351,115 @@ export const refreshDmetaTable = function(data, id) {
       }
       return ret;
     };
-    var insertRunContent = function(data) {
-      let blocks = '';
-      blocks += getRunBlock('Number of Cells', data.sample_summary['Number of Cells'], 'single');
-      blocks += getRunBlock(
-        'Mean UMIs per Cell',
-        data.sample_summary['Mean UMIs per Cell'],
-        'single'
-      );
-      blocks += getRunBlock(
-        [
-          'Total Reads',
-          'Unique Reads Aligned (STAR)',
-          'Multimapped Reads Aligned (STAR)',
-          'Total aligned UMIs (ESAT)',
-          'Total deduped UMIs (ESAT)',
-          'Duplication Rate'
-        ],
-        [
-          data.sample_summary['Total Reads'],
-          data.sample_summary['Unique Reads Aligned (STAR)'],
-          data.sample_summary['Multimapped Reads Aligned (STAR)'],
-          data.sample_summary['Total aligned UMIs (ESAT)'],
-          data.sample_summary['Total deduped UMIs (ESAT)'],
-          data.sample_summary['Duplication Rate']
-        ],
-        'list',
-        'Mapping'
-      );
-      blocks += getRunBlock(
-        ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
-        [
-          data.sample_summary['Number of Cells'],
-          data.sample_summary['Number of Genes'],
-          data.sample_summary['Mean Genes per Cell'],
-          data.sample_summary['Mean UMIs per Cell']
-        ],
-        'list',
-        'Cells'
-      );
 
-      const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
-      let runUrlDiv = '';
-      if (data.run_url)
-        runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${data.run_url}"> Go to run <i class="cil-external-link"></i></a></h5>`;
+    const insertRunContent = async rowid => {
+      try {
+        if (!$s.data.file[rowid]) return 'No Run Found.';
+        const fileIDs = $s.data.file[rowid].map(el => el._id);
+        const res = await axios({
+          method: 'POST',
+          url: '/api/v1/dmeta',
+          data: {
+            url: `/api/v1/projects/${project}/data/run/detailed`,
+            body: { file_ids: { '!in': fileIDs } }
+          }
+        });
+        const data = prepareDmetaData(res.data);
+        if (!data || data.length === 0) return 'No Run Found.';
+        $s.data.run[rowid] = data;
+        let ret = '';
+        for (var i = 0; i < data.length; i++) {
+          ret += insertRunTable(data[i], rowid);
+        }
+        return ret;
+      } catch (err) {
+        console.log(err);
+        return 'No Run Found.';
+      }
+    };
+    var insertRunTable = (data, rowid) => {
+      console.log('run', data);
+      let tableLabels = [];
+      let tableValues = [];
+      if (data.name) {
+        tableLabels.push('Name');
+        tableValues.push(data.name);
+      }
+      if (data.run_url) {
+        tableLabels.push('Run URL');
+        tableValues.push(`<a href="${data.run_url}" target="_blank">${data.run_url}</a>`);
+      }
+      if (data.run_env) {
+        tableLabels.push('Run Environment');
+        tableValues.push(data.run_env);
+      }
+      if (data.pipe_id) {
+        tableLabels.push('Pipeline ID');
+        tableValues.push(data.pipe_id);
+      }
+      if (data.work_dir) {
+        tableLabels.push('Work Directory');
+        tableValues.push(data.work_dir);
+      }
+      if (data.in) {
+        tableLabels.push('Inputs');
+        let inputs = data.in;
+        for (const k of Object.keys(inputs)) {
+          let input = inputs[k];
+          if (Array.isArray(input)) {
+            inputs[k] = input.map(el => {
+              if (el.name) {
+                return el.name;
+              }
+              return el;
+            });
+          }
+        }
+        tableValues.push(JSON.stringify(inputs));
+      }
+      if (data.out) {
+        let outArr = Object.keys(data.out);
+        if (outArr.length > 0) {
+          if (!$s.outCollections[rowid]) $s.outCollections[rowid] = [];
+          $s.outCollections[rowid] = Array.from(new Set($s.outCollections[rowid].concat(outArr)));
+        }
+
+        tableLabels.push('Output Collections');
+        tableValues.push(outArr.join(', '));
+      }
+
+      let blocks = '';
+      blocks += getRunBlock(tableLabels, tableValues, 'list');
       var content = `
-       ${runUrlDiv}
-      <div style="margin-top:20px; width:${width}px;">
+      <div style="margin-top:10px; width:1850px;">
         <div class="row">
           ${blocks}
         </div>
       </div>`;
-
       return content;
     };
-    var insertFileContent = function(data, id) {
+    const insertFileContent = async rowid => {
+      try {
+        const res = await axios({
+          method: 'POST',
+          url: '/api/v1/dmeta',
+          data: { url: `/api/v1/projects/${project}/data/file/summary?sample_id=${rowid}` }
+        });
+        const data = prepareDmetaData(res.data);
+        console.log('file', data);
+        if (!data || data.length === 0) return 'No File Found.';
+        $s.data.file[rowid] = data;
+        let ret = '';
+        for (var i = 0; i < data.length; i++) {
+          ret += insertFileTable(data[i]);
+        }
+        return ret;
+      } catch (err) {
+        console.log(err);
+        return 'No File Found.';
+      }
+    };
+    const insertFileTable = data => {
       let tableLabels = [];
       let tableValues = [];
       tableLabels.push('Name');
@@ -418,36 +468,45 @@ export const refreshDmetaTable = function(data, id) {
       var file_dir = cpData.file_dir;
       var files_used = cpData.files_used;
       // convert dmeta format (Array) to dnext format
-      if (file_dir.constructor === Array) {
+      if (file_dir && file_dir.constructor === Array) {
         file_dir = file_dir.join('\t');
       }
-      if (files_used.constructor === Array) {
+      if (files_used && files_used.constructor === Array) {
         for (var i = 0; i < files_used.length; i++) {
           files_used[i] = files_used[i].join(',');
         }
         files_used = files_used.join(' | ');
       }
-      if (data.file_dir) {
-        tableLabels.push('Input File(s) Directory');
-        tableValues.push(pattClean(file_dir));
-        tableLabels.push('Input File(s)');
-        tableValues.push(files_used.replace(/\|/g, '<br/>'));
-      } else {
-        tableLabels.push('GEO ID');
-        tableValues.push(files_used.replace(/\|/g, '<br/>'));
+      if (files_used) {
+        if (data.file_dir) {
+          tableLabels.push('Input File(s) Directory');
+          tableValues.push(pattClean(file_dir));
+          tableLabels.push('Input File(s)');
+          tableValues.push(files_used.replace(/\|/g, '<br/>'));
+        } else {
+          tableLabels.push('GEO ID');
+          tableValues.push(files_used.replace(/\|/g, '<br/>'));
+        }
       }
+
       var collection_type = '';
       if (data.collection_type == 'single') {
         collection_type = 'Single/List';
       } else if (data.collection_type == 'pair') {
         collection_type = 'Paired List';
+      } else if (data.collection_type == 'triple') {
+        collection_type = 'Triple List';
+      } else if (data.collection_type == 'quadruple') {
+        collection_type = 'Quadruple List';
+      } else if (data.collection_type) {
+        collection_type = data.collection_type;
       }
       tableLabels.push('Collection Type');
       tableValues.push(collection_type);
       let blocks = '';
       blocks += getRunBlock(tableLabels, tableValues, 'list');
       var content = `
-      <div style="margin-top:10px; width:1750px;">
+      <div style="margin-top:10px; width:1850px;">
         <div class="row">
           ${blocks}
         </div>
@@ -455,11 +514,198 @@ export const refreshDmetaTable = function(data, id) {
       return content;
     };
 
-    const formatChildRow = rowdata => {
+    const getOutCollTitle = (data, rowid) => {
+      const runId = data.run_id;
+      const fileId = data.file_id;
+      const sampleRunData = $s.data.run[rowid];
+      const sampleFileData = $s.data.file[rowid];
+      const runData = sampleRunData.filter(e => e._id == runId);
+      const fileData = sampleFileData.filter(e => e._id == fileId);
+      const runUrl = runData[0] && runData[0].run_url ? runData[0].run_url : '';
+      const runName = runData[0] && runData[0].name ? runData[0].name : 'Run';
+      const fileName = fileData[0] && fileData[0].name ? fileData[0].name : '';
+      const runHref = runUrl ? `href="${runUrl}" target="_blank"` : '';
+      const header = `<a ${runHref}">${runName}</a> - ${fileName}`;
+      return header;
+    };
+
+    const insertOutCollObjectTable = (data, rowid) => {
+      let blocks = '';
+      const header = getOutCollTitle(data, rowid);
+      blocks += getRunBlock(Object.keys(data.doc), Object.values(data.doc), 'list', header);
+
+      var content = `
+      <div style="margin-top:10px; width:1850px;">
+        <div class="row">
+          ${blocks}
+        </div>
+      </div>`;
+      return content;
+    };
+
+    const insertOutCollArrayTable = (data, rowid) => {
+      let labels = [];
+      if (data.doc) {
+        labels = data.doc.map(e => {
+          let ret = '';
+          const n = e.lastIndexOf('/');
+          const extloc = e.lastIndexOf('.');
+          const name = e.substring(n + 1);
+          const ext = e.substring(extloc + 1);
+          const url = `<a href="${e}" target="_blank">${name}</a>`;
+          ret += url;
+          const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
+          if (iframeExt.includes(ext)) {
+            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${e}"></iframe></div>`;
+            ret += iframe;
+          }
+
+          return ret;
+        });
+      }
+
+      const header = getOutCollTitle(data, rowid);
+      let blocks = '';
+      blocks += getRunBlock(labels, [], 'list', header);
+
+      var content = `
+      <div style="margin-top:10px; width:1850px;">
+        <div class="row">
+          ${blocks}
+        </div>
+      </div>`;
+      return content;
+    };
+
+    const getOutCollTable = async (collName, rowid) => {
+      try {
+        const res = await axios({
+          method: 'POST',
+          url: '/api/v1/dmeta',
+          data: {
+            url: `/api/v1/projects/${project}/data/${collName}?sample_id=${rowid}`
+          }
+        });
+        const data = prepareDmetaData(res.data);
+        if (!data || data.length === 0) return 'No Data Found.';
+        let ret = '';
+        for (var i = 0; i < data.length; i++) {
+          if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
+            // url array format
+            ret += insertOutCollArrayTable(data[i], rowid);
+            // object data for table format
+          } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
+            ret += insertOutCollObjectTable(data[i], rowid);
+          } else {
+            // return empty table
+            ret += insertOutCollArrayTable(data[i], rowid);
+          }
+        }
+
+        return ret;
+      } catch (err) {
+        console.log(err);
+        return 'No Data Found.';
+      }
+
+      // let ret = `<div style="margin-top:10px;"><img style="height:350px;" src="${example_analysis}" alt="Example run"></div>`;
+
+      // let blocks = '';
+      // blocks += getRunBlock('Number of Cells', data.sample_summary['Number of Cells'], 'single');
+      // blocks += getRunBlock(
+      //   'Mean UMIs per Cell',
+      //   data.sample_summary['Mean UMIs per Cell'],
+      //   'single'
+      // );
+      // blocks += getRunBlock(
+      //   [
+      //     'Total Reads',
+      //     'Unique Reads Aligned (STAR)',
+      //     'Multimapped Reads Aligned (STAR)',
+      //     'Total aligned UMIs (ESAT)',
+      //     'Total deduped UMIs (ESAT)',
+      //     'Duplication Rate'
+      //   ],
+      //   [
+      //     data.sample_summary['Total Reads'],
+      //     data.sample_summary['Unique Reads Aligned (STAR)'],
+      //     data.sample_summary['Multimapped Reads Aligned (STAR)'],
+      //     data.sample_summary['Total aligned UMIs (ESAT)'],
+      //     data.sample_summary['Total deduped UMIs (ESAT)'],
+      //     data.sample_summary['Duplication Rate']
+      //   ],
+      //   'list',
+      //   'Mapping'
+      // );
+      // blocks += getRunBlock(
+      //   ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
+      //   [
+      //     data.sample_summary['Number of Cells'],
+      //     data.sample_summary['Number of Genes'],
+      //     data.sample_summary['Mean Genes per Cell'],
+      //     data.sample_summary['Mean UMIs per Cell']
+      //   ],
+      //   'list',
+      //   'Cells'
+      // );
+      // const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+      // let runUrlDiv = '';
+      // if (data.run_url)
+      //   runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${data.run_url}"> Go to run <i class="cil-external-link"></i></a></h5>`;
+      // var content = `
+      //  ${runUrlDiv}
+      // <div style="margin-top:20px; width:${width}px;">
+      //   <div class="row">
+      //     ${blocks}
+      //   </div>
+      // </div>`;
+    };
+
+    const insertOutCollContent = async rowid => {
+      let ret = '';
+      if ($s.outCollections[rowid]) {
+        for (var i = 0; i < $s.outCollections[rowid].length; i++) {
+          const outName = $s.outCollections[rowid][i];
+          const outNameTabID = `${outName}Tab_` + rowid;
+          const content = await getOutCollTable($s.outCollections[rowid][i], rowid);
+          ret += `<div role="tabpanel" class="tab-pane" id="${outNameTabID}" searchtab="true">
+        ${content}
+        </div>`;
+        }
+      }
+      return ret;
+    };
+
+    const insertOutCollHeader = rowid => {
+      let ret = '';
+      if ($s.outCollections[rowid]) {
+        for (var i = 0; i < $s.outCollections[rowid].length; i++) {
+          const outName = $s.outCollections[rowid][i];
+          const label = outName
+            .replace('_', ' ')
+            .split(' ')
+            .map(s => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(' ');
+
+          const outNameTabID = `${outName}Tab_` + rowid;
+          ret += `<li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#${outNameTabID}" aria-expanded="false">
+          ${label}
+          </a>
+        </li>`;
+        }
+      }
+      return ret;
+    };
+
+    const formatChildRow = async rowdata => {
       const rowid = cleanSpecChar(rowdata._id);
       const fileTabID = 'fileTab_' + rowid;
       const runTabID = 'runTab_' + rowid;
-      const analysisTabID = 'analysisTab_' + rowid;
+      const fileContent = await insertFileContent(rowid);
+      const runContent = await insertRunContent(rowid);
+      const outCollContent = await insertOutCollContent(rowid);
+      const outCollHeader = insertOutCollHeader(rowid);
 
       let ret = '';
       const header = `
@@ -474,15 +720,8 @@ export const refreshDmetaTable = function(data, id) {
             Run
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" data-toggle="tab" href="#${analysisTabID}" aria-expanded="false">
-            Analysis
-            </a>
-          </li>
+          ${outCollHeader}
         </ul>`;
-      const fileContent = insertFileContent(rowdata);
-      const runContent = insertRunContent(rowdata);
-      const analysisContent = insertAnalysisContent(rowdata);
 
       const content = `
       <div class="tab-content">
@@ -492,9 +731,7 @@ export const refreshDmetaTable = function(data, id) {
         <div role="tabpanel" class="tab-pane" id="${runTabID}" searchtab="true">
         ${runContent}
         </div>
-        <div role="tabpanel" class="tab-pane" id="${analysisTabID}" searchtab="true">
-        ${analysisContent}
-        </div>
+        ${outCollContent}
       </div>`;
 
       ret += '<div role="tabpanel">';
@@ -505,10 +742,8 @@ export const refreshDmetaTable = function(data, id) {
     };
 
     // Add event listener for opening and closing details
-    $(document).on('click', 'td.details-control', function(e) {
+    $(document).on('click', 'td.details-control', async function(e) {
       var icon = $(this).find('i');
-      console.log($(this));
-      console.log(icon);
       var tr = $(this).closest('tr');
       var row = api.row(tr);
       if (row.child.isShown()) {
@@ -518,8 +753,12 @@ export const refreshDmetaTable = function(data, id) {
         icon.removeClass('cil-minus').addClass('cil-plus');
       } else {
         // Open child row
-        console.log('row data');
-        row.child(formatChildRow(row.data())).show();
+        if (!row.child()) {
+          const formattedRow = await formatChildRow(row.data());
+          row.child(formattedRow).show();
+        } else {
+          row.child.show();
+        }
         tr.addClass('shown');
         icon.removeClass('cil-plus').addClass('cil-minus');
       }
