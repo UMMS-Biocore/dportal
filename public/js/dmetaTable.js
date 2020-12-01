@@ -17,24 +17,42 @@ $s.mainCols = [
   'experiment',
   'patient',
   'aliquot',
-  'clinic_phen',
-  'lesional',
+  'clin_pheno',
+  'skin',
   'patient_note',
   'cell_density_tc',
   'cell_density_indrop',
-  'collect_date',
+  'cells_umis_gt_500',
+  'col_date',
   'library_tube_id',
   'pool_id',
-  'sample_summary.Total Reads',
-  'sample_summary.Multimapped Reads Aligned (STAR)',
-  'sample_summary.Unique Reads Aligned (STAR)',
-  'sample_summary.Total aligned UMIs (ESAT)',
-  'sample_summary.Total deduped UMIs (ESAT)',
-  'sample_summary.Duplication Rate',
-  'sample_summary.Number of Cells',
-  'sample_summary.Mean UMIs per Cell',
-  'sample_summary.Number of Genes',
-  'sample_summary.Mean Genes per Cell',
+  'bead_batch',
+  'blister_comments',
+  'blister_loc',
+  'blister_num',
+  'ethnicity',
+  'gender',
+  'biosample_name',
+  'biosample_type',
+  'organism',
+  'perc_live_cells',
+  'total_cells',
+  'visit_num',
+  'volume_bf',
+  'comment',
+  'contract',
+  'index_id',
+  'index_seq',
+  'run_comments',
+  'sc_lib_status',
+  'seq_comments',
+  'seq_details',
+  'sequence_date',
+  'unique_id',
+  'total_valid_reads',
+  'duplication_rate',
+  'mean_umi',
+  'mean_cell',
   'date_created',
   'owner',
   '$detailsButton'
@@ -53,18 +71,36 @@ $s.mainColLabels = [
   'Patient Note',
   'Cell density (TC)',
   'Cell density indrop',
+  'Cells UMIs>500',
   'Collect date',
   'Library tube id',
   'Pool id',
-  'Total Reads',
-  'Multimapped Reads',
-  'Unique Reads',
-  'Total aligned UMIs',
-  'Total deduped UMIs',
+  'Bead Batch',
+  'Blister Comments',
+  'Blister Location',
+  'Blister #',
+  'Ethnicity',
+  'Gender',
+  'Biosample Name',
+  'Biosample Type',
+  'Organism',
+  '%Live Cells',
+  'Total Cells',
+  'Visit #',
+  'Volume BF',
+  'Comment',
+  'Contract',
+  'Index Id',
+  'Index Seq',
+  'Run Comments',
+  'Sc Lib Status',
+  'Seq Comments',
+  'Seq Details',
+  'Sequence Date',
+  'Unique Id',
+  'Total Valid Reads',
   'Duplication Rate',
-  'Number of Cells',
   'Mean UMIs per Cell',
-  'Number of Genes',
   'Mean Genes per Cell',
   'Added on',
   'Owner',
@@ -79,15 +115,14 @@ $s.initialShowCols = [
   'experiment',
   'patient',
   'aliquot',
-  'clinic_phen',
-  'lesional',
+  'clin_pheno',
+  'skin',
   'patient_note',
   'cell_density_tc',
   'cell_density_indrop',
-  'collect_date',
+  'col_date',
   'library_tube_id',
   'pool_id',
-  'sample_summary.Mean UMIs per Cell',
   'date_created',
   'owner',
   '$detailsButton'
@@ -97,39 +132,51 @@ $s.initialShowCols = [
 // each config column defined in different object
 // [{"main": ["name", "status"]}, {"sample_summary":'sample_summary.Total Reads'}]
 
-$s.showHideCols = [];
-$s.showHideCols.push({
-  main: [
-    'name',
-    'status',
-    'experiment_series',
-    'experiment',
-    'patient',
-    'aliquot',
-    'clinic_phen',
-    'lesional',
-    'patient_note',
-    'cell_density_tc',
-    'cell_density_indrop',
-    'collect_date',
-    'library_tube_id',
-    'pool_id'
-  ]
-});
-$s.showHideCols.push({
-  sample_summary: [
-    'sample_summary.Total Reads',
-    'sample_summary.Multimapped Reads Aligned (STAR)',
-    'sample_summary.Unique Reads Aligned (STAR)',
-    'sample_summary.Total aligned UMIs (ESAT)',
-    'sample_summary.Total deduped UMIs (ESAT)',
-    'sample_summary.Duplication Rate',
-    'sample_summary.Number of Cells',
-    'sample_summary.Mean UMIs per Cell',
-    'sample_summary.Number of Genes',
-    'sample_summary.Mean Genes per Cell'
-  ]
-});
+$s.showHideCols = [
+  'name',
+  'status',
+  'experiment_series',
+  'experiment',
+  'patient',
+  'aliquot',
+  'clin_pheno',
+  'skin',
+  'patient_note',
+  'cell_density_tc',
+  'cell_density_indrop',
+  'cells_umis_gt_500',
+  'col_date',
+  'library_tube_id',
+  'pool_id',
+  'bead_batch',
+  'blister_comments',
+  'blister_loc',
+  'blister_num',
+  'ethnicity',
+  'gender',
+  'biosample_name',
+  'biosample_type',
+  'organism',
+  'perc_live_cells',
+  'total_cells',
+  'visit_num',
+  'volume_bf',
+  'comment',
+  'contract',
+  'index_id',
+  'index_seq',
+  'run_comments',
+  'sc_lib_status',
+  'seq_comments',
+  'seq_details',
+  'sequence_date',
+  'unique_id',
+  'total_valid_reads',
+  'duplication_rate',
+  'mean_umi',
+  'mean_cell',
+  'date_created'
+];
 
 $s.sidebarFilterCols = [
   'status',
@@ -137,8 +184,8 @@ $s.sidebarFilterCols = [
   'experiment',
   'patient',
   'aliquot',
-  'clinic_phen',
-  'lesional',
+  'clin_pheno',
+  'skin',
   'pool_id',
   'owner'
 ];
@@ -185,13 +232,9 @@ const getColSelectMenu = () => {
   <div class="col-sm-12"><dt>Configure Visible Columns</dt></div>
   </div>
   <div class="row">`;
-  //<div class="col-sm-4">${btn}${btn}</div>
   for (var i = 0; i < $s.showHideCols.length; i++) {
     menuDiv += `<div class="col-sm-3">`;
-    const cols = Object.values($s.showHideCols[i]);
-    for (var k = 0; k < cols[0].length; k++) {
-      menuDiv += getShowHideBtns(cols[0][k]);
-    }
+    menuDiv += getShowHideBtns($s.showHideCols[i]);
     menuDiv += `</div>`;
   }
   menuDiv += `</div>`;
@@ -535,40 +578,42 @@ export const refreshDmetaTable = function(data, id, project) {
       const sampleRunData = $s.data.run[rowid];
       const runData = sampleRunData.filter(e => e._id == runId);
       const runUrl = runData[0] && runData[0].run_url ? runData[0].run_url : '';
+      if (data.doc) {
+        blocks += getRunBlock('Number of Cells', data.doc['Number of Cells'], 'single');
+        blocks += getRunBlock('Mean UMIs per Cell', data.doc['Mean UMIs per Cell'], 'single');
+        blocks += getRunBlock(
+          [
+            'Total Reads',
+            'Unique Reads Aligned (STAR)',
+            'Multimapped Reads Aligned (STAR)',
+            'Total aligned UMIs (ESAT)',
+            'Total deduped UMIs (ESAT)',
+            'Duplication Rate'
+          ],
+          [
+            data.doc['Total Reads'],
+            data.doc['Unique Reads Aligned (STAR)'],
+            data.doc['Multimapped Reads Aligned (STAR)'],
+            data.doc['Total aligned UMIs (ESAT)'],
+            data.doc['Total deduped UMIs (ESAT)'],
+            data.doc['Duplication Rate']
+          ],
+          'list',
+          'Mapping'
+        );
+        blocks += getRunBlock(
+          ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
+          [
+            data.doc['Number of Cells'],
+            data.doc['Number of Genes'],
+            data.doc['Mean Genes per Cell'],
+            data.doc['Mean UMIs per Cell']
+          ],
+          'list',
+          'Cells'
+        );
+      }
 
-      blocks += getRunBlock('Number of Cells', data.doc['Number of Cells'], 'single');
-      blocks += getRunBlock('Mean UMIs per Cell', data.doc['Mean UMIs per Cell'], 'single');
-      blocks += getRunBlock(
-        [
-          'Total Reads',
-          'Unique Reads Aligned (STAR)',
-          'Multimapped Reads Aligned (STAR)',
-          'Total aligned UMIs (ESAT)',
-          'Total deduped UMIs (ESAT)',
-          'Duplication Rate'
-        ],
-        [
-          data.doc['Total Reads'],
-          data.doc['Unique Reads Aligned (STAR)'],
-          data.doc['Multimapped Reads Aligned (STAR)'],
-          data.doc['Total aligned UMIs (ESAT)'],
-          data.doc['Total deduped UMIs (ESAT)'],
-          data.doc['Duplication Rate']
-        ],
-        'list',
-        'Mapping'
-      );
-      blocks += getRunBlock(
-        ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
-        [
-          data.doc['Number of Cells'],
-          data.doc['Number of Genes'],
-          data.doc['Mean Genes per Cell'],
-          data.doc['Mean UMIs per Cell']
-        ],
-        'list',
-        'Cells'
-      );
       const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
       let runUrlDiv = '';
       if (runUrl)
@@ -791,9 +836,6 @@ export const refreshDmetaTable = function(data, id, project) {
         ret += insertOutCollArrayTable(data[i], rowid);
         // object data for table format
       } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
-        console.log(data[i].doc['Number of Cells']);
-        console.log(data[i].doc['Number of Cells']);
-        console.log(data[i].doc['Mean UMIs per Cell']);
         if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
           ret += insertOutCollObjectSingleCellTable(data[i], rowid);
         } else {
@@ -801,7 +843,7 @@ export const refreshDmetaTable = function(data, id, project) {
         }
       } else {
         // return empty table
-        ret += insertOutCollArrayTable(data[i], rowid);
+        ret += insertOutCollObjectSingleCellTable(data[i], rowid);
       }
       outcollcontent.empty().append(ret);
     });
