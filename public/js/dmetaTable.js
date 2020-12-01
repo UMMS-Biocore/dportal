@@ -3,7 +3,7 @@ import axios from 'axios';
 import { cleanSpecChar, prepareDmetaData } from './jsfuncs';
 import example_analysis from './../assets/img/example_analysis.png'; // relative path to image
 // GLOBAL SCOPE
-let $s = { data: { file: {}, run: {} }, outCollections: [] };
+let $s = { data: { file: {}, run: {}, out: {} }, outCollections: [] };
 export const getDmetaColumns = () => {
   return $s;
 };
@@ -529,6 +529,60 @@ export const refreshDmetaTable = function(data, id, project) {
       return header;
     };
 
+    const insertOutCollObjectSingleCellTable = (data, rowid) => {
+      let blocks = '';
+      const runId = data.run_id;
+      const sampleRunData = $s.data.run[rowid];
+      const runData = sampleRunData.filter(e => e._id == runId);
+      const runUrl = runData[0] && runData[0].run_url ? runData[0].run_url : '';
+
+      blocks += getRunBlock('Number of Cells', data.doc['Number of Cells'], 'single');
+      blocks += getRunBlock('Mean UMIs per Cell', data.doc['Mean UMIs per Cell'], 'single');
+      blocks += getRunBlock(
+        [
+          'Total Reads',
+          'Unique Reads Aligned (STAR)',
+          'Multimapped Reads Aligned (STAR)',
+          'Total aligned UMIs (ESAT)',
+          'Total deduped UMIs (ESAT)',
+          'Duplication Rate'
+        ],
+        [
+          data.doc['Total Reads'],
+          data.doc['Unique Reads Aligned (STAR)'],
+          data.doc['Multimapped Reads Aligned (STAR)'],
+          data.doc['Total aligned UMIs (ESAT)'],
+          data.doc['Total deduped UMIs (ESAT)'],
+          data.doc['Duplication Rate']
+        ],
+        'list',
+        'Mapping'
+      );
+      blocks += getRunBlock(
+        ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
+        [
+          data.doc['Number of Cells'],
+          data.doc['Number of Genes'],
+          data.doc['Mean Genes per Cell'],
+          data.doc['Mean UMIs per Cell']
+        ],
+        'list',
+        'Cells'
+      );
+      const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+      let runUrlDiv = '';
+      if (runUrl)
+        runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${runUrl}"> Go to run <i class="cil-external-link"></i></a></h5>`;
+      var content = `
+       ${runUrlDiv}
+      <div style="margin-top:20px; width:${width}px;">
+        <div class="row">
+          ${blocks}
+        </div>
+      </div>`;
+      return content;
+    };
+
     const insertOutCollObjectTable = (data, rowid) => {
       let blocks = '';
       const header = getOutCollTitle(data, rowid);
@@ -588,77 +642,33 @@ export const refreshDmetaTable = function(data, id, project) {
         });
         const data = prepareDmetaData(res.data);
         if (!data || data.length === 0) return 'No Data Found.';
+        if (!$s.data.out[collName]) $s.data.out[collName] = {};
+        if (!$s.data.out[collName][rowid]) $s.data.out[collName][rowid] = {};
+        $s.data.out[collName][rowid] = data;
         let ret = '';
-        for (var i = 0; i < data.length; i++) {
-          if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
-            // url array format
-            ret += insertOutCollArrayTable(data[i], rowid);
-            // object data for table format
-          } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
-            ret += insertOutCollObjectTable(data[i], rowid);
-          } else {
-            // return empty table
-            ret += insertOutCollArrayTable(data[i], rowid);
-          }
+        // fill dropdown
+        ret += `<div style="margin-top:20px;"> Run: <select class="outcollselectrun" sample_id="${rowid}" project="${project}" collName="${collName}">`;
+        for (var i = data.length - 1; i >= 0; --i) {
+          const runId = data[i].run_id;
+          const sampleRunData = $s.data.run[rowid];
+          const runData = sampleRunData.filter(e => e._id == runId);
+          const runName = runData[0] && runData[0].name ? runData[0].name : 'Run';
+          const runDnextID =
+            runData[0] && runData[0].run_url && runData[0].run_url.split('&id=')
+              ? 'Run ' + runData[0].run_url.split('&id=')[1] + ' - '
+              : '';
+          console.log(runDnextID);
+          ret += `<option value="${i}">${runDnextID}${runName}</option>`;
         }
+        ret += `</select>`;
+        ret += `<div class="outcollcontent"></div>`;
+        ret += `</div>`;
 
         return ret;
       } catch (err) {
         console.log(err);
         return 'No Data Found.';
       }
-
-      // let ret = `<div style="margin-top:10px;"><img style="height:350px;" src="${example_analysis}" alt="Example run"></div>`;
-
-      // let blocks = '';
-      // blocks += getRunBlock('Number of Cells', data.sample_summary['Number of Cells'], 'single');
-      // blocks += getRunBlock(
-      //   'Mean UMIs per Cell',
-      //   data.sample_summary['Mean UMIs per Cell'],
-      //   'single'
-      // );
-      // blocks += getRunBlock(
-      //   [
-      //     'Total Reads',
-      //     'Unique Reads Aligned (STAR)',
-      //     'Multimapped Reads Aligned (STAR)',
-      //     'Total aligned UMIs (ESAT)',
-      //     'Total deduped UMIs (ESAT)',
-      //     'Duplication Rate'
-      //   ],
-      //   [
-      //     data.sample_summary['Total Reads'],
-      //     data.sample_summary['Unique Reads Aligned (STAR)'],
-      //     data.sample_summary['Multimapped Reads Aligned (STAR)'],
-      //     data.sample_summary['Total aligned UMIs (ESAT)'],
-      //     data.sample_summary['Total deduped UMIs (ESAT)'],
-      //     data.sample_summary['Duplication Rate']
-      //   ],
-      //   'list',
-      //   'Mapping'
-      // );
-      // blocks += getRunBlock(
-      //   ['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'],
-      //   [
-      //     data.sample_summary['Number of Cells'],
-      //     data.sample_summary['Number of Genes'],
-      //     data.sample_summary['Mean Genes per Cell'],
-      //     data.sample_summary['Mean UMIs per Cell']
-      //   ],
-      //   'list',
-      //   'Cells'
-      // );
-      // const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
-      // let runUrlDiv = '';
-      // if (data.run_url)
-      //   runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${data.run_url}"> Go to run <i class="cil-external-link"></i></a></h5>`;
-      // var content = `
-      //  ${runUrlDiv}
-      // <div style="margin-top:20px; width:${width}px;">
-      //   <div class="row">
-      //     ${blocks}
-      //   </div>
-      // </div>`;
     };
 
     const insertOutCollContent = async rowid => {
@@ -746,6 +756,7 @@ export const refreshDmetaTable = function(data, id, project) {
       var icon = $(this).find('i');
       var tr = $(this).closest('tr');
       var row = api.row(tr);
+      let rowid = '';
       if (row.child.isShown()) {
         // close child row
         row.child.hide();
@@ -754,14 +765,45 @@ export const refreshDmetaTable = function(data, id, project) {
       } else {
         // Open child row
         if (!row.child()) {
-          const formattedRow = await formatChildRow(row.data());
+          const rowdata = row.data();
+          const formattedRow = await formatChildRow(rowdata);
+          rowid = cleanSpecChar(rowdata._id);
           row.child(formattedRow).show();
         } else {
           row.child.show();
         }
         tr.addClass('shown');
         icon.removeClass('cil-plus').addClass('cil-minus');
+        $(`.outcollselectrun[sample_id="${rowid}"]`).trigger('change');
       }
+    });
+
+    // Add event listener for opening and closing details
+    $(document).on('change', '.outcollselectrun', function(e) {
+      var i = $(this).val();
+      var outcollcontent = $(this).next();
+      const collName = $(this).attr('collName');
+      const rowid = $(this).attr('sample_id');
+      const data = $s.data.out[collName][rowid];
+      let ret = '';
+      if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
+        // url array format
+        ret += insertOutCollArrayTable(data[i], rowid);
+        // object data for table format
+      } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
+        console.log(data[i].doc['Number of Cells']);
+        console.log(data[i].doc['Number of Cells']);
+        console.log(data[i].doc['Mean UMIs per Cell']);
+        if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
+          ret += insertOutCollObjectSingleCellTable(data[i], rowid);
+        } else {
+          ret += insertOutCollObjectTable(data[i], rowid);
+        }
+      } else {
+        // return empty table
+        ret += insertOutCollArrayTable(data[i], rowid);
+      }
+      outcollcontent.empty().append(ret);
     });
   };
 
