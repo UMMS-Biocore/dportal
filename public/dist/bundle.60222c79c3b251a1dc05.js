@@ -21585,12 +21585,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _jsfuncs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./jsfuncs */ "./public/js/jsfuncs.js");
-/* harmony import */ var _assets_img_example_analysis_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./../assets/img/example_analysis.png */ "./public/assets/img/example_analysis.png");
 /* eslint-disable */
 
-
- // relative path to image
-// GLOBAL SCOPE
+ // GLOBAL SCOPE
 
 let $s = {
   data: {
@@ -22077,7 +22074,7 @@ const refreshDmetaTable = function (data, id, project) {
       return content;
     };
 
-    const insertOutCollArrayTable = (data, rowid) => {
+    const insertOutCollArrayTable = async (data, rowid) => {
       let labels = [];
 
       if (data.doc) {
@@ -22090,11 +22087,23 @@ const refreshDmetaTable = function (data, id, project) {
           const url = `<a href="${e}" target="_blank">${name}</a>`;
           ret += url;
           const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
+          const datatablesExt = ['tsv', 'csv'];
 
           if (iframeExt.includes(ext)) {
             const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${e}"></iframe></div>`;
             ret += iframe;
-          }
+          } // else if (datatablesExt.includes(ext)) {
+          //   console.log(e);
+          //   const res = await axios({
+          //     method: 'GET',
+          //     url: '/api/v1/misc/getUrlContent',
+          //     data: { url: e }
+          //   });
+          //   console.log(res);
+          //   const table = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><table></table></div>`;
+          //   ret += table;
+          // }
+
 
           return ret;
         });
@@ -22255,7 +22264,7 @@ const refreshDmetaTable = function (data, id, project) {
       }
     }); // Add event listener for opening and closing details
 
-    $(document).on('change', '.outcollselectrun', function (e) {
+    $(document).on('change', '.outcollselectrun', async function (e) {
       var i = $(this).val();
       var outcollcontent = $(this).next();
       const collName = $(this).attr('collName');
@@ -22265,7 +22274,7 @@ const refreshDmetaTable = function (data, id, project) {
 
       if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
         // url array format
-        ret += insertOutCollArrayTable(data[i], rowid); // object data for table format
+        ret += await insertOutCollArrayTable(data[i], rowid); // object data for table format
       } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
         if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
           ret += insertOutCollObjectSingleCellTable(data[i], rowid);
@@ -22328,20 +22337,20 @@ const refreshDmetaTable = function (data, id, project) {
         targets: '_all'
       } //hides undefined error
       ],
-      initComplete: initCompDmetaTable
+      initComplete: initCompDmetaTable,
+      lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']]
     };
-    dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
+    dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>lrt<"pull-left"i><"bottom"p><"clear">';
+    dataTableObj.pageLength = 25;
     dataTableObj.destroy = true;
     dataTableObj.data = data;
     dataTableObj.hover = true; // speed up the table loading
 
     dataTableObj.deferRender = true;
     dataTableObj.scroller = true;
-    dataTableObj.scrollCollapse = true; // dataTableObj.scrollY = 600;
-
+    dataTableObj.scrollCollapse = true;
     dataTableObj.scrollX = 500;
-    dataTableObj.sScrollX = true; // dataTableObj.autoWidth = false;
-
+    dataTableObj.sScrollX = true;
     $s.dmetaTable = $(TableID).DataTable(dataTableObj);
   }
 };
@@ -22481,14 +22490,14 @@ if (alertMessage) (0,_alerts__WEBPACK_IMPORTED_MODULE_7__.showAlert)('success', 
     const data = (0,_jsfuncs__WEBPACK_IMPORTED_MODULE_2__.prepareDmetaData)(res.data);
     (0,_dmetaTable__WEBPACK_IMPORTED_MODULE_3__.refreshDmetaTable)(data, 'dmetaDetailed', project);
     (0,_chartjs__WEBPACK_IMPORTED_MODULE_4__.prepareBarGraph)(data, {
-      dataCol: 'clinic_phen',
+      dataCol: 'clin_pheno',
       xLabel: 'Clinical Phenotype',
       yLabel: 'Samples',
       colorSchema: 'Tableau10',
       chartId: 'basicBarChart1'
     });
     (0,_chartjs__WEBPACK_IMPORTED_MODULE_4__.prepareBarGraph)(data, {
-      dataCol: 'lesional',
+      dataCol: 'skin',
       xLabel: 'Skin',
       yLabel: 'Samples',
       colorSchema: 'Tableau10',
@@ -56654,25 +56663,6 @@ module.exports = function () {
 
   return g;
 }();
-
-/***/ }),
-
-/***/ "./public/assets/img/example_analysis.png":
-/*!************************************************!*\
-  !*** ./public/assets/img/example_analysis.png ***!
-  \************************************************/
-/*! namespace exports */
-/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
-/*! other exports [not provided] [no usage info] */
-/*! runtime requirements: __webpack_exports__, __webpack_require__.r, __webpack_require__.p, __webpack_require__.d, __webpack_require__.* */
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => __WEBPACK_DEFAULT_EXPORT__
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (__webpack_require__.p + "eb1d6a14fe6dfd3baf0f4e0828ac7c00.png");
 
 /***/ }),
 
@@ -95947,4 +95937,4 @@ module.exports = function (list, options) {
 /******/ 	// This entry module used 'exports' so it can't be inlined
 /******/ })()
 ;
-//# sourceMappingURL=bundle.5bd5445f9e7ce953a867.js.map
+//# sourceMappingURL=bundle.60222c79c3b251a1dc05.js.map
