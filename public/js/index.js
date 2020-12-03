@@ -115,14 +115,14 @@ if (alertMessage) showAlert('success', alertMessage, 20);
 
     refreshDmetaTable(data, 'dmetaDetailed', project);
     prepareBarGraph(data, {
-      dataCol: 'clinic_phen',
+      dataCol: 'clin_pheno',
       xLabel: 'Clinical Phenotype',
       yLabel: 'Samples',
       colorSchema: 'Tableau10',
       chartId: 'basicBarChart1'
     });
     prepareBarGraph(data, {
-      dataCol: 'lesional',
+      dataCol: 'skin',
       xLabel: 'Skin',
       yLabel: 'Samples',
       colorSchema: 'Tableau10',
