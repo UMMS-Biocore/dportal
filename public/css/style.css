@@ -5129,7 +5129,7 @@ html:not([dir='rtl']) .dropleft .dropdown-toggle:empty::after {
   display: block;
   width: 100%;
   height: calc(1.5em + 0.75rem + 2px);
-  padding: 0.375rem 0.75rem;
+  /* padding: 0.375rem 0.75rem; */
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.5;
@@ -5260,7 +5260,7 @@ select.form-control:focus::-ms-value {
 
 .form-control-sm {
   height: calc(1.5em + 0.5rem + 2px);
-  padding: 0.25rem 0.5rem;
+  /* padding: 0.25rem 0.5rem; */
   font-size: 0.765625rem;
   line-height: 1.5;
   border-radius: 0.2rem;

@@ -1,7 +1,6 @@
 /* eslint-disable */
 import axios from 'axios';
 import { cleanSpecChar, prepareDmetaData } from './jsfuncs';
-import example_analysis from './../assets/img/example_analysis.png'; // relative path to image
 // GLOBAL SCOPE
 let $s = { data: { file: {}, run: {}, out: {} }, outCollections: [] };
 export const getDmetaColumns = () => {
@@ -642,7 +641,7 @@ export const refreshDmetaTable = function(data, id, project) {
       return content;
     };
 
-    const insertOutCollArrayTable = (data, rowid) => {
+    const insertOutCollArrayTable = async (data, rowid) => {
       let labels = [];
       if (data.doc) {
         labels = data.doc.map(e => {
@@ -654,10 +653,23 @@ export const refreshDmetaTable = function(data, id, project) {
           const url = `<a href="${e}" target="_blank">${name}</a>`;
           ret += url;
           const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
+          const datatablesExt = ['tsv', 'csv'];
           if (iframeExt.includes(ext)) {
             const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${e}"></iframe></div>`;
             ret += iframe;
           }
+          // else if (datatablesExt.includes(ext)) {
+          //   console.log(e);
+          //   const res = await axios({
+          //     method: 'GET',
+          //     url: '/api/v1/misc/getUrlContent',
+          //     data: { url: e }
+          //   });
+
+          //   console.log(res);
+          //   const table = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><table></table></div>`;
+          //   ret += table;
+          // }
 
           return ret;
         });
@@ -824,7 +836,7 @@ export const refreshDmetaTable = function(data, id, project) {
     });
 
     // Add event listener for opening and closing details
-    $(document).on('change', '.outcollselectrun', function(e) {
+    $(document).on('change', '.outcollselectrun', async function(e) {
       var i = $(this).val();
       var outcollcontent = $(this).next();
       const collName = $(this).attr('collName');
@@ -833,7 +845,7 @@ export const refreshDmetaTable = function(data, id, project) {
       let ret = '';
       if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
         // url array format
-        ret += insertOutCollArrayTable(data[i], rowid);
+        ret += await insertOutCollArrayTable(data[i], rowid);
         // object data for table format
       } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
         if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
@@ -889,9 +901,15 @@ export const refreshDmetaTable = function(data, id, project) {
         },
         { defaultContent: '-', targets: '_all' } //hides undefined error
       ],
-      initComplete: initCompDmetaTable
+      initComplete: initCompDmetaTable,
+      lengthMenu: [
+        [10, 25, 50, -1],
+        [10, 25, 50, 'All']
+      ]
     };
-    dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>rt<"pull-left"i><"bottom"p><"clear">';
+
+    dataTableObj.dom = '<"' + searchBarID + '.pull-left"f>lrt<"pull-left"i><"bottom"p><"clear">';
+    dataTableObj.pageLength = 25;
     dataTableObj.destroy = true;
     dataTableObj.data = data;
     dataTableObj.hover = true;
@@ -899,10 +917,8 @@ export const refreshDmetaTable = function(data, id, project) {
     dataTableObj.deferRender = true;
     dataTableObj.scroller = true;
     dataTableObj.scrollCollapse = true;
-    // dataTableObj.scrollY = 600;
     dataTableObj.scrollX = 500;
     dataTableObj.sScrollX = true;
-    // dataTableObj.autoWidth = false;
     $s.dmetaTable = $(TableID).DataTable(dataTableObj);
   }
 };
