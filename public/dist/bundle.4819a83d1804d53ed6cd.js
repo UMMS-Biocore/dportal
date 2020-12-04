@@ -21592,6 +21592,7 @@ __webpack_require__.r(__webpack_exports__);
 let $s = {
   data: {
     file: {},
+    server: {},
     run: {},
     out: {}
   },
@@ -22019,6 +22020,29 @@ const refreshDmetaTable = function (data, id, project) {
       return content;
     };
 
+    const getServerInfo = async (data, rowid) => {
+      const runId = data.run_id;
+      const sampleRunData = $s.data.run[rowid];
+      const runData = sampleRunData.filter(e => e._id == runId);
+      const serverID = runData[0] && runData[0].server_id ? runData[0].server_id : '';
+      if (!serverID) return '';
+
+      if (!$s.data.server[serverID]) {
+        const res = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
+          method: 'POST',
+          url: '/api/v1/dmeta',
+          data: {
+            url: `/api/v1/servers/${serverID}`
+          }
+        });
+        const server = (0,_jsfuncs__WEBPACK_IMPORTED_MODULE_1__.prepareDmetaData)(res.data);
+        if (server[0]) $s.data.server[serverID] = server[0];
+        console.log('server', server);
+      }
+
+      return $s.data.server[serverID];
+    };
+
     const getOutCollTitle = (data, rowid) => {
       const runId = data.run_id;
       const fileId = data.file_id;
@@ -22075,43 +22099,48 @@ const refreshDmetaTable = function (data, id, project) {
     };
 
     const insertOutCollArrayTable = async (data, rowid) => {
-      let labels = [];
+      let fileBlock = [];
 
       if (data.doc) {
-        labels = data.doc.map(e => {
+        const server = await getServerInfo(data, rowid);
+        if (!server || !server.url_server || !server.url_client) return 'Server url not found';
+        console.log(server);
+        const files = data.doc;
+
+        for (var i = 0; i < files.length; i++) {
           let ret = '';
-          const n = e.lastIndexOf('/');
-          const extloc = e.lastIndexOf('.');
-          const name = e.substring(n + 1);
-          const ext = e.substring(extloc + 1);
-          const url = `<a href="${e}" target="_blank">${name}</a>`;
+          const n = files[i].lastIndexOf('/');
+          const extloc = files[i].lastIndexOf('.');
+          const name = files[i].substring(n + 1);
+          const ext = files[i].substring(extloc + 1);
+          const link = `${server.url_client}${files[i]}`;
+          const url = `<div style="margin-top:20px; "><a  href="${link}" target="_blank">${name}</a></div>`;
           ret += url;
           const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
           const datatablesExt = ['tsv', 'csv'];
 
           if (iframeExt.includes(ext)) {
-            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${e}"></iframe></div>`;
+            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${link}"></iframe></div>`;
             ret += iframe;
-          } // else if (datatablesExt.includes(ext)) {
-          //   console.log(e);
-          //   const res = await axios({
-          //     method: 'GET',
-          //     url: '/api/v1/misc/getUrlContent',
-          //     data: { url: e }
-          //   });
-          //   console.log(res);
-          //   const table = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><table></table></div>`;
-          //   ret += table;
-          // }
+          } else if (datatablesExt.includes(ext)) {
+            const serverURL = `${server.url_server}${files[i]}`;
 
+            try {
+              const tableId = `file${rowid}${(0,_jsfuncs__WEBPACK_IMPORTED_MODULE_1__.cleanSpecChar)(link)}`;
+              const table = `<div style="margin-bottom:10px; margin-top:10px; width:100%; height:300px overflow-x:auto;"  class="table-responsive " "><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
+              ret += table;
+            } catch (err) {
+              console.log(err);
+            }
+          }
 
-          return ret;
-        });
+          fileBlock.push(ret);
+        }
       }
 
       const header = getOutCollTitle(data, rowid);
       let blocks = '';
-      blocks += getRunBlock(labels, [], 'list', header);
+      blocks += getRunBlock(fileBlock, [], 'list', header);
       var content = `
       <div style="margin-top:10px; width:1850px;">
         <div class="row">
@@ -22185,7 +22214,7 @@ const refreshDmetaTable = function (data, id, project) {
           const label = outName.replace('_', ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
           const outNameTabID = `${outName}Tab_` + rowid;
           ret += `<li class="nav-item">
-          <a class="nav-link" data-toggle="tab" href="#${outNameTabID}" aria-expanded="false">
+          <a class="nav-link outcolltab" data-toggle="tab" href="#${outNameTabID}" aria-expanded="false">
           ${label}
           </a>
         </li>`;
@@ -22262,6 +22291,50 @@ const refreshDmetaTable = function (data, id, project) {
         icon.removeClass('cil-plus').addClass('cil-minus');
         $(`.outcollselectrun[sample_id="${rowid}"]`).trigger('change');
       }
+    });
+
+    const refreshFileTables = async rowid => {
+      const tables = $(`.fileTables[sample_id="${rowid}"]`);
+
+      for (var i = 0; i < tables.length; i++) {
+        const tableId = $(tables[i]).attr('id');
+        const ext = $(tables[i]).attr('ext');
+        const serverURL = $(tables[i]).attr('serverURL');
+
+        if (!$.fn.DataTable.isDataTable(tableId)) {
+          const {
+            data
+          } = await axios__WEBPACK_IMPORTED_MODULE_0___default()({
+            method: 'POST',
+            url: '/api/v1/misc/getDnextReportContent',
+            data: {
+              url: serverURL
+            }
+          });
+          let sep = '\t';
+          if (ext == 'csv') sep = ',';
+          const fixHeader = true;
+          dataTableObj = (0,_jsfuncs__WEBPACK_IMPORTED_MODULE_1__.tsvCsvDatatablePrep)(data.data, fixHeader, sep); //speed up the table loading
+
+          dataTableObj.destroy = true;
+          dataTableObj.hover = true; // speed up the table loading
+
+          dataTableObj.deferRender = true;
+          dataTableObj.scroller = true;
+          dataTableObj.scrollCollapse = true;
+          dataTableObj.scrollX = 500;
+          dataTableObj.sScrollX = true;
+          dataTableObj.columnDefs = [{
+            defaultContent: '-',
+            targets: '_all'
+          }];
+          $('#' + tableId).DataTable(dataTableObj);
+        }
+      }
+    };
+
+    $(document).on('shown.coreui.tab', 'a.outcolltab[data-toggle="tab"]', function (e) {
+      $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
     }); // Add event listener for opening and closing details
 
     $(document).on('change', '.outcollselectrun', async function (e) {
@@ -22287,6 +22360,7 @@ const refreshDmetaTable = function (data, id, project) {
       }
 
       outcollcontent.empty().append(ret);
+      refreshFileTables(rowid);
     });
   };
 
@@ -22546,6 +22620,7 @@ if (alertMessage) (0,_alerts__WEBPACK_IMPORTED_MODULE_7__.showAlert)('success', 
 /*! namespace exports */
 /*! export cleanSpecChar [provided] [no usage info] [missing usage info prevents renaming] */
 /*! export prepareDmetaData [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export tsvCsvDatatablePrep [provided] [no usage info] [missing usage info prevents renaming] */
 /*! other exports [not provided] [no usage info] */
 /*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.d, __webpack_require__.* */
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
@@ -22554,7 +22629,8 @@ if (alertMessage) (0,_alerts__WEBPACK_IMPORTED_MODULE_7__.showAlert)('success', 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "cleanSpecChar": () => /* binding */ cleanSpecChar,
-/* harmony export */   "prepareDmetaData": () => /* binding */ prepareDmetaData
+/* harmony export */   "prepareDmetaData": () => /* binding */ prepareDmetaData,
+/* harmony export */   "tsvCsvDatatablePrep": () => /* binding */ tsvCsvDatatablePrep
 /* harmony export */ });
 /* eslint-disable */
 const cleanSpecChar = n => {
@@ -22572,6 +22648,39 @@ const prepareDmetaData = data => {
   }
 
   return ret;
+}; //prepare datatables input
+//columns: [{"title":"id"}, {"title":"name"}]
+//data: [["123","John Doe Fresno"],["124", "Alice Alicia"]]
+
+const tsvCsvDatatablePrep = (tsvCsv, fixHeader, sep) => {
+  if (!tsvCsv) return '';
+  var result = {
+    columns: [],
+    data: []
+  };
+  var cols = result.columns;
+  var data = result.data;
+  var tsvCsv = $.trim(tsvCsv);
+  var lines = tsvCsv.split('\n');
+
+  if (fixHeader) {
+    lines[0] = lines[0].replace(/\./g, '_');
+  }
+
+  var headers = lines[0].split(sep);
+
+  for (var i = 0; i < headers.length; i++) {
+    cols.push({
+      title: headers[i]
+    });
+  }
+
+  for (var i = 1; i < lines.length; i++) {
+    var currentline = lines[i].split(sep);
+    data.push(currentline);
+  }
+
+  return result;
 };
 
 /***/ }),
@@ -95937,4 +96046,4 @@ module.exports = function (list, options) {
 /******/ 	// This entry module used 'exports' so it can't be inlined
 /******/ })()
 ;
-//# sourceMappingURL=bundle.60222c79c3b251a1dc05.js.map
+//# sourceMappingURL=bundle.4819a83d1804d53ed6cd.js.map

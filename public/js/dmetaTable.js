@@ -1,8 +1,8 @@
 /* eslint-disable */
 import axios from 'axios';
-import { cleanSpecChar, prepareDmetaData } from './jsfuncs';
+import { cleanSpecChar, prepareDmetaData, tsvCsvDatatablePrep } from './jsfuncs';
 // GLOBAL SCOPE
-let $s = { data: { file: {}, run: {}, out: {} }, outCollections: [] };
+let $s = { data: { file: {}, server: {}, run: {}, out: {} }, outCollections: [] };
 export const getDmetaColumns = () => {
   return $s;
 };
@@ -556,6 +556,27 @@ export const refreshDmetaTable = function(data, id, project) {
       return content;
     };
 
+    const getServerInfo = async (data, rowid) => {
+      const runId = data.run_id;
+      const sampleRunData = $s.data.run[rowid];
+      const runData = sampleRunData.filter(e => e._id == runId);
+      const serverID = runData[0] && runData[0].server_id ? runData[0].server_id : '';
+      if (!serverID) return '';
+      if (!$s.data.server[serverID]) {
+        const res = await axios({
+          method: 'POST',
+          url: '/api/v1/dmeta',
+          data: {
+            url: `/api/v1/servers/${serverID}`
+          }
+        });
+        const server = prepareDmetaData(res.data);
+        if (server[0]) $s.data.server[serverID] = server[0];
+        console.log('server', server);
+      }
+      return $s.data.server[serverID];
+    };
+
     const getOutCollTitle = (data, rowid) => {
       const runId = data.run_id;
       const fileId = data.file_id;
@@ -642,42 +663,43 @@ export const refreshDmetaTable = function(data, id, project) {
     };
 
     const insertOutCollArrayTable = async (data, rowid) => {
-      let labels = [];
+      let fileBlock = [];
       if (data.doc) {
-        labels = data.doc.map(e => {
+        const server = await getServerInfo(data, rowid);
+        if (!server || !server.url_server || !server.url_client) return 'Server url not found';
+        console.log(server);
+        const files = data.doc;
+
+        for (var i = 0; i < files.length; i++) {
           let ret = '';
-          const n = e.lastIndexOf('/');
-          const extloc = e.lastIndexOf('.');
-          const name = e.substring(n + 1);
-          const ext = e.substring(extloc + 1);
-          const url = `<a href="${e}" target="_blank">${name}</a>`;
+          const n = files[i].lastIndexOf('/');
+          const extloc = files[i].lastIndexOf('.');
+          const name = files[i].substring(n + 1);
+          const ext = files[i].substring(extloc + 1);
+          const link = `${server.url_client}${files[i]}`;
+          const url = `<div style="margin-top:20px; "><a  href="${link}" target="_blank">${name}</a></div>`;
           ret += url;
           const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
           const datatablesExt = ['tsv', 'csv'];
           if (iframeExt.includes(ext)) {
-            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${e}"></iframe></div>`;
+            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${link}"></iframe></div>`;
             ret += iframe;
+          } else if (datatablesExt.includes(ext)) {
+            const serverURL = `${server.url_server}${files[i]}`;
+            try {
+              const tableId = `file${rowid}${cleanSpecChar(link)}`;
+              const table = `<div style="margin-bottom:10px; margin-top:10px; width:100%; height:300px overflow-x:auto;"  class="table-responsive " "><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
+              ret += table;
+            } catch (err) {
+              console.log(err);
+            }
           }
-          // else if (datatablesExt.includes(ext)) {
-          //   console.log(e);
-          //   const res = await axios({
-          //     method: 'GET',
-          //     url: '/api/v1/misc/getUrlContent',
-          //     data: { url: e }
-          //   });
-
-          //   console.log(res);
-          //   const table = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><table></table></div>`;
-          //   ret += table;
-          // }
-
-          return ret;
-        });
+          fileBlock.push(ret);
+        }
       }
-
       const header = getOutCollTitle(data, rowid);
       let blocks = '';
-      blocks += getRunBlock(labels, [], 'list', header);
+      blocks += getRunBlock(fileBlock, [], 'list', header);
 
       var content = `
       <div style="margin-top:10px; width:1850px;">
@@ -756,7 +778,7 @@ export const refreshDmetaTable = function(data, id, project) {
 
           const outNameTabID = `${outName}Tab_` + rowid;
           ret += `<li class="nav-item">
-          <a class="nav-link" data-toggle="tab" href="#${outNameTabID}" aria-expanded="false">
+          <a class="nav-link outcolltab" data-toggle="tab" href="#${outNameTabID}" aria-expanded="false">
           ${label}
           </a>
         </li>`;
@@ -835,6 +857,44 @@ export const refreshDmetaTable = function(data, id, project) {
       }
     });
 
+    const refreshFileTables = async rowid => {
+      const tables = $(`.fileTables[sample_id="${rowid}"]`);
+      for (var i = 0; i < tables.length; i++) {
+        const tableId = $(tables[i]).attr('id');
+        const ext = $(tables[i]).attr('ext');
+        const serverURL = $(tables[i]).attr('serverURL');
+        if (!$.fn.DataTable.isDataTable(tableId)) {
+          const { data } = await axios({
+            method: 'POST',
+            url: '/api/v1/misc/getDnextReportContent',
+            data: { url: serverURL }
+          });
+          let sep = '\t';
+          if (ext == 'csv') sep = ',';
+          const fixHeader = true;
+          dataTableObj = tsvCsvDatatablePrep(data.data, fixHeader, sep);
+          //speed up the table loading
+          dataTableObj.destroy = true;
+          dataTableObj.hover = true;
+          // speed up the table loading
+          dataTableObj.deferRender = true;
+          dataTableObj.scroller = true;
+          dataTableObj.scrollCollapse = true;
+          dataTableObj.scrollX = 500;
+          dataTableObj.sScrollX = true;
+          dataTableObj.columnDefs = [{ defaultContent: '-', targets: '_all' }];
+
+          $('#' + tableId).DataTable(dataTableObj);
+        }
+      }
+    };
+
+    $(document).on('shown.coreui.tab', 'a.outcolltab[data-toggle="tab"]', function(e) {
+      $($.fn.dataTable.tables(true))
+        .DataTable()
+        .columns.adjust();
+    });
+
     // Add event listener for opening and closing details
     $(document).on('change', '.outcollselectrun', async function(e) {
       var i = $(this).val();
@@ -858,6 +918,7 @@ export const refreshDmetaTable = function(data, id, project) {
         ret += insertOutCollObjectSingleCellTable(data[i], rowid);
       }
       outcollcontent.empty().append(ret);
+      refreshFileTables(rowid);
     });
   };
 

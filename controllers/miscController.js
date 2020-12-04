@@ -11,21 +11,15 @@ exports.getChangeLog = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUrlContent = catchAsync(async (req, res, next) => {
-  try {
-    const data2 = await axios.get(req.body.url);
-    console.log(data2);
-  } catch (err) {
-    console.log(err);
-  }
-  if (req.body.url) {
-    const data = await axios.get(req.body.url);
-    console.log(data);
-  }
-  // const json = JSON.parse(JSON.stringify(data));
-  const doc = fs.readFileSync(path.join(__dirname, './../NEWS'), 'utf8');
+exports.getDnextReportContent = catchAsync(async (req, res, next) => {
+  if (!req.body.url)
+    return res.status(400).json({
+      status: 'error',
+      message: 'Url not found'
+    });
+  const { data } = await axios.get(req.body.url);
   res.status(200).json({
     status: 'success',
-    data: JSON.stringify(doc)
+    data: data
   });
 });
