@@ -572,7 +572,6 @@ export const refreshDmetaTable = function(data, id, project) {
         });
         const server = prepareDmetaData(res.data);
         if (server[0]) $s.data.server[serverID] = server[0];
-        console.log('server', server);
       }
       return $s.data.server[serverID];
     };
