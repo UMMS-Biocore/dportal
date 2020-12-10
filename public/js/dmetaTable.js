@@ -1,8 +1,13 @@
 /* eslint-disable */
 import axios from 'axios';
-import { cleanSpecChar, prepareDmetaData, tsvCsvDatatablePrep } from './jsfuncs';
+import {
+  cleanSpecChar,
+  prepareDmetaData,
+  tsvCsvDatatablePrep,
+  dmetaOutDatatablePrep
+} from './jsfuncs';
 // GLOBAL SCOPE
-let $s = { data: { file: {}, server: {}, run: {}, out: {} }, outCollections: [] };
+let $s = { data: { file: {}, server: {}, run: {}, out: {} }, outCollections: [], DTObj: {} };
 export const getDmetaColumns = () => {
   return $s;
 };
@@ -676,18 +681,18 @@ export const refreshDmetaTable = function(data, id, project) {
           const name = files[i].substring(n + 1);
           const ext = files[i].substring(extloc + 1);
           const link = `${server.url_client}${files[i]}`;
-          const url = `<div style="margin-top:20px; "><a  href="${link}" target="_blank">${name}</a></div>`;
+          const url = `<div style="margin-top:20px; margin-bottom:10px;"><a  href="${link}" target="_blank">${name}</a></div>`;
           ret += url;
           const iframeExt = ['png', 'jpg', 'gif', 'tiff', 'tif', 'bmp', 'html', 'out', 'pdf'];
           const datatablesExt = ['tsv', 'csv'];
           if (iframeExt.includes(ext)) {
-            const iframe = `<div style="margin-bottom:10px;margin-top:10px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${link}"></iframe></div>`;
+            const iframe = `<div style="margin-bottom:15px; margin-top:15px; height:300px;"><iframe frameborder="0"  style="width:100%; height:100%;" src="${link}"></iframe></div>`;
             ret += iframe;
           } else if (datatablesExt.includes(ext)) {
             const serverURL = `${server.url_server}${files[i]}`;
             try {
               const tableId = `file${rowid}${cleanSpecChar(link)}`;
-              const table = `<div style="margin-bottom:10px; margin-top:10px; width:100%; height:300px overflow-x:auto;"  class="table-responsive " "><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
+              const table = `<div style="margin-bottom:15px; width:100%;  overflow-x:auto;"  class="table-responsive"><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
               ret += table;
             } catch (err) {
               console.log(err);
@@ -709,40 +714,73 @@ export const refreshDmetaTable = function(data, id, project) {
       return content;
     };
 
-    const getOutCollTable = async (collName, rowid) => {
+    const getOutCollTable = async (collName, sample_id) => {
       try {
         const res = await axios({
           method: 'POST',
           url: '/api/v1/dmeta',
           data: {
-            url: `/api/v1/projects/${project}/data/${collName}?sample_id=${rowid}`
+            url: `/api/v1/projects/${project}/data/${collName}?sample_id=${sample_id}`
           }
         });
         const data = prepareDmetaData(res.data);
         if (!data || data.length === 0) return 'No Data Found.';
+        console.log(data);
         if (!$s.data.out[collName]) $s.data.out[collName] = {};
-        if (!$s.data.out[collName][rowid]) $s.data.out[collName][rowid] = {};
-        $s.data.out[collName][rowid] = data;
-        let ret = '';
-        // fill dropdown
-        ret += `<div style="margin-top:20px;"> Run: <select class="outcollselectrun" sample_id="${rowid}" project="${project}" collName="${collName}">`;
-        for (var i = data.length - 1; i >= 0; --i) {
-          const runId = data[i].run_id;
-          const sampleRunData = $s.data.run[rowid];
+        if (!$s.data.out[collName][sample_id]) $s.data.out[collName][sample_id] = {};
+        data.reverse();
+        $s.data.out[collName][sample_id] = data;
+
+        // prepare data for table:
+        let dataForTable = data.map(i => ({ ...i }));
+        for (var i = 0; i < dataForTable.length; i++) {
+          const runId = dataForTable[i].run_id;
+          const sampleRunData = $s.data.run[sample_id];
           const runData = sampleRunData.filter(e => e._id == runId);
           const runName = runData[0] && runData[0].name ? runData[0].name : 'Run';
           const runDnextID =
             runData[0] && runData[0].run_url && runData[0].run_url.split('&id=')
-              ? 'Run ' + runData[0].run_url.split('&id=')[1] + ' - '
+              ? runData[0].run_url.split('&id=')[1] + ' - '
               : '';
-          console.log(runDnextID);
-          ret += `<option value="${i}">${runDnextID}${runName}</option>`;
-        }
-        ret += `</select>`;
-        ret += `<div class="outcollcontent"></div>`;
-        ret += `</div>`;
 
-        return ret;
+          if (Array.isArray(dataForTable[i].doc)) {
+            dataForTable[i] = dataForTable[i].doc.slice();
+          } else if (typeof dataForTable[i].doc === 'object') {
+            dataForTable[i] = $.extend(true, {}, dataForTable[i].doc);
+          } else {
+            dataForTable[i] = dataForTable[i].doc;
+          }
+
+          if (!dataForTable[i]) dataForTable[i] = {};
+          if (Array.isArray(dataForTable[i])) {
+            const numFiles = dataForTable[i].length;
+            dataForTable[i] = { Files: numFiles };
+          }
+          if (dataForTable[i]) dataForTable[i]['Run Info'] = `${runDnextID}${runName}`;
+        }
+        console.log(dataForTable);
+        console.log(data);
+        let dataTableObj = dmetaOutDatatablePrep(dataForTable);
+        dataTableObj.destroy = true;
+        dataTableObj.searching = false;
+        dataTableObj.paging = false;
+        dataTableObj.info = false;
+        dataTableObj.hover = true;
+        dataTableObj.deferRender = true;
+        dataTableObj.scroller = true;
+        dataTableObj.scrollCollapse = true;
+        dataTableObj.scrollX = 500;
+        dataTableObj.sScrollX = true;
+        dataTableObj.columnDefs = [{ defaultContent: '-', targets: '_all' }];
+        if (!$s.DTObj[project]) $s.DTObj[project] = {};
+        if (!$s.DTObj[project][sample_id]) $s.DTObj[project][sample_id] = {};
+        if (!$s.DTObj[project][sample_id][collName]) $s.DTObj[project][sample_id][collName] = {};
+        $s.DTObj[project][sample_id][collName] = dataTableObj;
+        const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+        const tableId = `outTable-${project}-${sample_id}-${collName}`;
+        const table = `<div style="margin-bottom:10px; margin-top:10px; width:${width}px;  overflow-x:auto;"  class="table-responsive" "><table style="width:100%; white-space: nowrap;" class="outTables row-border table " project="${project}" collName="${collName}" sample_id="${sample_id}" id="${tableId}"></table></div>`;
+
+        return table;
       } catch (err) {
         console.log(err);
         return 'No Data Found.';
@@ -782,6 +820,27 @@ export const refreshDmetaTable = function(data, id, project) {
           </a>
         </li>`;
         }
+      }
+      return ret;
+    };
+
+    const formatOutChildRow = async (rowdata, i, sample_id, collName) => {
+      const data = $s.data.out[collName][sample_id];
+      console.log(data);
+      let ret = '';
+      if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
+        // url array format
+        ret += await insertOutCollArrayTable(data[i], sample_id);
+        // object data for table format
+      } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
+        if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
+          ret += insertOutCollObjectSingleCellTable(data[i], sample_id);
+        } else {
+          ret += insertOutCollObjectTable(data[i], sample_id);
+        }
+      } else {
+        // return empty table
+        ret += insertOutCollObjectSingleCellTable(data[i], sample_id);
       }
       return ret;
     };
@@ -847,17 +906,74 @@ export const refreshDmetaTable = function(data, id, project) {
           const formattedRow = await formatChildRow(rowdata);
           rowid = cleanSpecChar(rowdata._id);
           row.child(formattedRow).show();
+          refreshOutTables(rowid);
         } else {
           row.child.show();
         }
         tr.addClass('shown');
         icon.removeClass('cil-plus').addClass('cil-minus');
-        $(`.outcollselectrun[sample_id="${rowid}"]`).trigger('change');
+
+        // $(`.outcollselectrun[sample_id="${rowid}"]`).trigger('change');
       }
     });
 
+    // Add event listener for opening and closing details of out collection
+    $(document).on('click', 'td.outdetails-control', async function(e) {
+      var icon = $(this).find('i');
+      var tr = $(this).closest('tr');
+      const tableID = $(this)
+        .closest('table')
+        .attr('id');
+      const sample_id = $(`#${tableID}`).attr('sample_id');
+      const collName = $(`#${tableID}`).attr('collName');
+      const table = $(`#${tableID}`).DataTable();
+      var row = table.row(tr);
+      const rowIdx = table.row(tr).index();
+      if (row.child.isShown()) {
+        // close child row
+        row.child.hide();
+        tr.removeClass('shown');
+        icon.removeClass('cil-minus').addClass('cil-plus');
+      } else {
+        // Open child row
+        if (!row.child()) {
+          const rowdata = row.data();
+          console.log(rowIdx);
+          console.log(rowdata);
+          const formattedRow = await formatOutChildRow(rowdata, rowIdx, sample_id, collName);
+          row.child(formattedRow).show();
+          refreshFileTables(sample_id);
+        } else {
+          row.child.show();
+        }
+        tr.addClass('shown');
+        icon.removeClass('cil-plus').addClass('cil-minus');
+
+        $($.fn.dataTable.tables(true))
+          .DataTable()
+          .columns.adjust();
+      }
+    });
+
+    const refreshOutTables = rowid => {
+      const tables = $(`.outTables[sample_id="${rowid}"]`);
+      console.log(tables);
+      for (var i = 0; i < tables.length; i++) {
+        const tableId = $(tables[i]).attr('id');
+        console.log('tableId', tableId);
+        const project = $(tables[i]).attr('project');
+        const collName = $(tables[i]).attr('collName');
+        if (!$.fn.DataTable.isDataTable(tableId)) {
+          const dataTableObj = $s.DTObj[project][rowid][collName];
+          console.log('dataTableObj', dataTableObj);
+          $('#' + tableId).DataTable(dataTableObj);
+        }
+      }
+    };
+
     const refreshFileTables = async rowid => {
       const tables = $(`.fileTables[sample_id="${rowid}"]`);
+      console.log(tables);
       for (var i = 0; i < tables.length; i++) {
         const tableId = $(tables[i]).attr('id');
         const ext = $(tables[i]).attr('ext');
@@ -892,32 +1008,6 @@ export const refreshDmetaTable = function(data, id, project) {
       $($.fn.dataTable.tables(true))
         .DataTable()
         .columns.adjust();
-    });
-
-    // Add event listener for opening and closing details
-    $(document).on('change', '.outcollselectrun', async function(e) {
-      var i = $(this).val();
-      var outcollcontent = $(this).next();
-      const collName = $(this).attr('collName');
-      const rowid = $(this).attr('sample_id');
-      const data = $s.data.out[collName][rowid];
-      let ret = '';
-      if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
-        // url array format
-        ret += await insertOutCollArrayTable(data[i], rowid);
-        // object data for table format
-      } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
-        if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
-          ret += insertOutCollObjectSingleCellTable(data[i], rowid);
-        } else {
-          ret += insertOutCollObjectTable(data[i], rowid);
-        }
-      } else {
-        // return empty table
-        ret += insertOutCollObjectSingleCellTable(data[i], rowid);
-      }
-      outcollcontent.empty().append(ret);
-      refreshFileTables(rowid);
     });
   };
 
