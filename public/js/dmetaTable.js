@@ -388,7 +388,7 @@ export const refreshDmetaTable = function(data, id, project) {
           ret = `
           <div class="col-sm-6">
             <div class="card">
-              <div class="card-body summary_card">
+              <div class="card-body summary_card" style="overflow-x:auto;">
                 ${headerDiv}
                 ${table}
               </div>
@@ -692,7 +692,7 @@ export const refreshDmetaTable = function(data, id, project) {
             const serverURL = `${server.url_server}${files[i]}`;
             try {
               const tableId = `file${rowid}${cleanSpecChar(link)}`;
-              const table = `<div style="margin-bottom:15px; width:100%;  overflow-x:auto;"  class="table-responsive"><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
+              const table = `<div style="margin-bottom:15px; width:100%;  overflow-x:auto;"  class="table-responsive"><table style="overflow-x:auto; width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
               ret += table;
             } catch (err) {
               console.log(err);
