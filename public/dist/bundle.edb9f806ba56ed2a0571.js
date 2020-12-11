@@ -21817,7 +21817,7 @@ const refreshDmetaTable = function (data, id, project) {
           ret = `
           <div class="col-sm-6">
             <div class="card">
-              <div class="card-body summary_card">
+              <div class="card-body summary_card" style="overflow-x:auto;">
                 ${headerDiv}
                 ${table}
               </div>
@@ -22072,7 +22072,8 @@ const refreshDmetaTable = function (data, id, project) {
         blocks += getRunBlock(['Number of Cells', 'Number of Genes', 'Mean Genes per Cell', 'Mean UMIs per Cell'], [data.doc['Number of Cells'], data.doc['Number of Genes'], data.doc['Mean Genes per Cell'], data.doc['Mean UMIs per Cell']], 'list', 'Cells');
       }
 
-      const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+      const width = document.getElementById('dmetaTableContainer').offsetWidth - 100;
+      console.log(width);
       let runUrlDiv = '';
       if (runUrl) runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${runUrl}"> Go to run <i class="cil-external-link"></i></a></h5>`;
       var content = `
@@ -22127,7 +22128,7 @@ const refreshDmetaTable = function (data, id, project) {
 
             try {
               const tableId = `file${rowid}${(0,_jsfuncs__WEBPACK_IMPORTED_MODULE_1__.cleanSpecChar)(link)}`;
-              const table = `<div style="margin-bottom:15px; width:100%;  overflow-x:auto;"  class="table-responsive"><table style="width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
+              const table = `<div style="margin-bottom:15px; width:100%;  overflow-x:auto;"  class="table-responsive"><table style="overflow-x:auto; width:100%; white-space: nowrap;" class="fileTables row-border table" sample_id="${rowid}" ext="${ext}" serverURL="${serverURL}" id="${tableId}"></table></div>`;
               ret += table;
             } catch (err) {
               console.log(err);
@@ -96217,4 +96218,4 @@ module.exports = function (list, options) {
 /******/ 	// This entry module used 'exports' so it can't be inlined
 /******/ })()
 ;
-//# sourceMappingURL=bundle.3333f4a952b3e8704541.js.map
+//# sourceMappingURL=bundle.edb9f806ba56ed2a0571.js.map
