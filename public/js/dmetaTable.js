@@ -638,7 +638,8 @@ export const refreshDmetaTable = function(data, id, project) {
         );
       }
 
-      const width = document.getElementById('dmetaTableContainer').offsetWidth - 60;
+      const width = document.getElementById('dmetaTableContainer').offsetWidth - 100;
+      console.log(width);
       let runUrlDiv = '';
       if (runUrl)
         runUrlDiv = `<h5 style="margin-top:20px;"><a target="_blank" href="${runUrl}"> Go to run <i class="cil-external-link"></i></a></h5>`;
