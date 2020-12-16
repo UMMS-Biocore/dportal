@@ -131,7 +131,7 @@ setInterval(() => {
 app.use('/api/v1/dmeta', dmetaRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/groups', groupRouter);
-app.use('/api/v1/servers', serverRouter);
+app.use('/api/v1/server', serverRouter);
 app.use('/api/v1/usergroups', userGroupRouter);
 app.use('/api/v1/misc', miscRouter);
 app.use('/', viewRouter);
