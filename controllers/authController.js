@@ -82,7 +82,7 @@ const signToken = id => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
-  res.cookie('jwt', token, {
+  res.cookie('jwt-dportal', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
@@ -101,7 +101,7 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 const sendTokenCookie = (token, req, res) => {
-  res.cookie('jwt', token, {
+  res.cookie('jwt-dportal', token, {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
@@ -223,7 +223,7 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = async (req, res) => {
-  res.cookie('jwt', 'loggedout', {
+  res.cookie('jwt-dportal', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
   });
@@ -245,8 +245,8 @@ exports.isLoggedIn = async (req, res, next) => {
   let token;
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
+  } else if (req.cookies['jwt-dportal']) {
+    token = req.cookies['jwt-dportal'];
   }
   if (!token) return next();
   let currentUser;
@@ -287,17 +287,20 @@ exports.isLoggedIn = async (req, res, next) => {
 // Only for rendered pages, no errors!
 exports.isLoggedInView = async (req, res, next) => {
   console.log('** isLoggedInView');
-  console.log('req.cookies.jwt', req.cookies.jwt);
+  console.log('req.cookies.jwt-dportal', req.cookies['jwt-dportal']);
   console.log('req.session.loginCheck', req.session.loginCheck);
-  if (req.cookies.jwt && req.cookies.jwt != 'loggedout') {
+  if (req.cookies['jwt-dportal'] && req.cookies['jwt-dportal'] != 'loggedout') {
     try {
       let currentUser;
       if (process.env.SSO_LOGIN === 'true') {
-        const token = await accessTokens.find(req.cookies.jwt);
+        const token = await accessTokens.find(req.cookies['jwt-dportal']);
         if (token.userId) currentUser = await User.findOne({ sso_id: token.userId });
         res.locals.token = token;
       } else {
-        const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+        const decoded = await promisify(jwt.verify)(
+          req.cookies['jwt-dportal'],
+          process.env.JWT_SECRET
+        );
         currentUser = await User.findById(decoded.id);
       }
       if (!currentUser) return next();
