@@ -7,7 +7,7 @@ exports.getDmetaInfo = catchAsync(async (req, res, next) => {
     let accessToken = '';
     let url = '';
     let body = {};
-    if (req.cookies.jwt) accessToken = req.cookies.jwt;
+    if (req.cookies['jwt-dportal']) accessToken = req.cookies['jwt-dportal'];
     if (req.body.url) url = req.body.url;
     if (req.body.body) body = req.body.body;
 
