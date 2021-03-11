@@ -401,8 +401,12 @@ export const refreshDmetaTable = function(data, id, project) {
 
     const insertRunContent = async rowid => {
       try {
-        if (!$s.data.file[rowid]) return 'No Run Found.';
+        if (!$s.data.file[rowid]) {
+          console.log('insertRunContent rowid not found:', rowid);
+          return 'No Run Found.';
+        }
         const fileIDs = $s.data.file[rowid].map(el => el._id);
+        console.log(`insertRunContent fileIDs: ${fileIDs}`);
         const res = await axios({
           method: 'POST',
           url: '/api/v1/dmeta',
@@ -412,7 +416,10 @@ export const refreshDmetaTable = function(data, id, project) {
           }
         });
         const data = prepareDmetaData(res.data);
-        if (!data || data.length === 0) return 'No Run Found.';
+        if (!data || data.length === 0) {
+          console.log(`run not found belong to ${fileIDs}:`, data);
+          return 'No Run Found.';
+        }
         $s.data.run[rowid] = data;
         let ret = '';
         for (var i = 0; i < data.length; i++) {
@@ -565,18 +572,14 @@ export const refreshDmetaTable = function(data, id, project) {
       const runId = data.run_id;
       const sampleRunData = $s.data.run[rowid];
       const runData = sampleRunData.filter(e => e._id == runId);
-      const serverID = runData[0] && runData[0].server_id ? runData[0].server_id : '';
+      const serverData =
+        runData[0] && runData[0].server_id && runData[0].server_id ? runData[0].server_id : '';
+      console.log('serverData', serverData);
+      if (!serverData) return '';
+      const serverID = serverData._id ? serverData._id : '';
       if (!serverID) return '';
       if (!$s.data.server[serverID]) {
-        const res = await axios({
-          method: 'POST',
-          url: '/api/v1/dmeta',
-          data: {
-            url: `/api/v1/server/${serverID}`
-          }
-        });
-        const server = prepareDmetaData(res.data);
-        if (server[0]) $s.data.server[serverID] = server[0];
+        $s.data.server[serverID] = serverData;
       }
       return $s.data.server[serverID];
     };
@@ -669,8 +672,15 @@ export const refreshDmetaTable = function(data, id, project) {
     const insertOutCollArrayTable = async (data, rowid) => {
       let fileBlock = [];
       if (data.doc) {
-        const server = await getServerInfo(data, rowid);
-        if (!server || !server.url_server || !server.url_client) return 'Server url not found';
+        let server;
+        try {
+          server = await getServerInfo(data, rowid);
+        } catch (err) {
+          console.log('getServerInfo err', err);
+        }
+        if (!server) return 'Server url not found';
+        if (!server.url_server) return 'Server url_server not found';
+        if (!server.url_client) return 'Server url_client not found';
         console.log(server);
         const files = data.doc;
 
@@ -830,7 +840,11 @@ export const refreshDmetaTable = function(data, id, project) {
       let ret = '';
       if (data[i] && data[i].doc && Array.isArray(data[i].doc)) {
         // url array format
-        ret += await insertOutCollArrayTable(data[i], sample_id);
+        try {
+          ret += await insertOutCollArrayTable(data[i], sample_id);
+        } catch (err) {
+          console.log(err);
+        }
         // object data for table format
       } else if (data[i] && data[i].doc && typeof data[i].doc === 'object') {
         if (data[i].doc['Number of Cells'] && data[i].doc['Mean UMIs per Cell']) {
